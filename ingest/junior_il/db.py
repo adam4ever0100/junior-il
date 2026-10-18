@@ -264,3 +264,140 @@ def reparse_descriptions(conn: psycopg.Connection, parse) -> tuple[int, int]:
             )
             changed += 1
     return checked, changed
+
+
+# --- board health & retirement -------------------------------------------
+
+def latest_run_per_board(conn: psycopg.Connection) -> list[dict]:
+    """The most recent poll of each board, with its status and error."""
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT DISTINCT ON (source, board_token)
+                   source, board_token, status, started_at, error
+              FROM ingest_run
+             ORDER BY source, board_token, started_at DESC
+        """)
+        return cur.fetchall()
+
+
+def retire_dead_boards(conn: psycopg.Connection, boards: list[tuple[str, str]]) -> dict[str, int]:
+    """Close postings belonging to boards that have ceased to exist.
+
+    A 404 is not a timeout. Postings are normally closed only after a
+    successful fetch, which is right when a poll fails transiently — but a
+    board that has been removed never fetches successfully again, so its
+    postings would stay 'open' forever and quietly inflate every later count.
+    Cybereason's Greenhouse board disappeared between the September and October
+    sweeps; this is the rule that keeps its five postings out of the index.
+    """
+    closed: dict[str, int] = {}
+    for source, board_token in boards:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT status, error FROM ingest_run
+                 WHERE source = %s AND board_token = %s
+                 ORDER BY started_at DESC LIMIT 1
+            """, (source, board_token))
+            run = cur.fetchone()
+            if not run or run["status"] == "ok" or "404" not in (run["error"] or ""):
+                continue
+            cur.execute("""
+                UPDATE posting
+                   SET closed_at = now(), closed_reason = 'board_retired'
+                 WHERE source = %s AND board_token = %s AND closed_at IS NULL
+            """, (source, board_token))
+            if cur.rowcount:
+                closed[f"{source}/{board_token}"] = cur.rowcount
+    return closed
+
+
+# --- index ---------------------------------------------------------------
+
+def unnormalized_open(conn: psycopg.Connection, parser_version: str) -> int:
+    """Open postings with no normalized row for this parser version.
+
+    The index must never be computed over a half-normalized corpus: the
+    missing rows would silently read as "not in Israel".
+    """
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT count(*) AS n
+              FROM posting p
+              LEFT JOIN posting_norm n
+                     ON n.posting_id = p.id AND n.parser_version = %s
+             WHERE p.closed_at IS NULL AND n.posting_id IS NULL
+        """, (parser_version,))
+        return cur.fetchone()["n"]
+
+
+INDEX_COUNTS = """
+SELECT
+  count(*)                                                        AS open_total,
+  count(*) FILTER (WHERE n.is_israel)                             AS open_israel,
+  count(*) FILTER (WHERE n.is_israel AND n.is_engineering)         AS open_israel_eng,
+  count(*) FILTER (WHERE n.junior_eligible)                        AS junior_eligible,
+  count(*) FILTER (WHERE n.is_israel AND n.is_engineering
+                     AND n.years_stated AND n.years_bar <= 1)      AS explicit_entry,
+  count(*) FILTER (WHERE n.is_israel AND n.is_engineering
+                     AND n.years_bar >= 3)                         AS bar_3plus,
+  count(*) FILTER (WHERE n.is_israel AND n.is_engineering
+                     AND NOT n.years_stated AND NOT n.years_vague) AS years_unstated,
+  count(*) FILTER (WHERE n.is_israel AND n.is_engineering
+                     AND n.years_vague)                            AS years_vague,
+  count(*) FILTER (WHERE n.is_israel AND n.junior_signal)          AS junior_titled,
+  count(*) FILTER (WHERE n.is_israel AND n.is_engineering
+                     AND n.degree_required)                        AS degree_required,
+  count(*) FILTER (WHERE n.is_israel AND n.is_engineering
+                     AND n.clearance_required)                     AS clearance_required
+FROM posting p
+JOIN posting_norm n ON n.posting_id = p.id AND n.parser_version = %s
+WHERE p.closed_at IS NULL
+"""
+
+
+def index_counts(conn: psycopg.Connection, parser_version: str) -> dict:
+    with conn.cursor() as cur:
+        cur.execute(INDEX_COUNTS, (parser_version,))
+        return cur.fetchone()
+
+
+def years_histogram(conn: psycopg.Connection, parser_version: str) -> list[dict]:
+    """Israeli engineering roles bucketed by the bar they set."""
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT CASE
+                     WHEN n.years_vague THEN 'unquantified'
+                     WHEN NOT n.years_stated THEN 'unstated'
+                     WHEN n.years_bar <= 1 THEN '0-1'
+                     WHEN n.years_bar = 2 THEN '2'
+                     WHEN n.years_bar BETWEEN 3 AND 4 THEN '3-4'
+                     ELSE '5+'
+                   END AS bucket,
+                   count(*) AS roles
+              FROM posting p
+              JOIN posting_norm n ON n.posting_id = p.id AND n.parser_version = %s
+             WHERE p.closed_at IS NULL AND n.is_israel AND n.is_engineering
+             GROUP BY 1
+        """, (parser_version,))
+        return cur.fetchall()
+
+
+def insert_snapshot(conn: psycopg.Connection, fields: dict) -> int:
+    columns = ", ".join(fields)
+    placeholders = ", ".join(f"%({k})s" for k in fields)
+    with conn.cursor() as cur:
+        cur.execute(
+            f"INSERT INTO index_snapshot ({columns}) VALUES ({placeholders}) RETURNING id",
+            fields,
+        )
+        return cur.fetchone()["id"]
+
+
+def snapshot_series(conn: psycopg.Connection, limit: int = 24) -> list[dict]:
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT taken_at, status, open_israel_eng, junior_eligible,
+                   pct_junior_eligible, bar_3plus, parser_version
+              FROM index_snapshot ORDER BY taken_at DESC LIMIT %s
+        """, (limit,))
+        return cur.fetchall()

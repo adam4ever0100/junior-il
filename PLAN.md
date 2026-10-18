@@ -92,7 +92,27 @@ Rules worth getting right, because these are the ones a critic will attack:
 Done means: `pytest` green, and `junior-il normalize` fills `posting_norm` for
 all ~900 rows in one pass.
 
-## Day 4 — the index itself
+## Day 4 — the index — **DONE 18 Oct**
+
+`index_snapshot` + `junior-il index [--snapshot]` + `junior-il retire-boards` +
+[METHOD.md](METHOD.md). Snapshot 1 recorded as `complete`. 82 tests.
+
+The reading: **123** open Israeli engineering roles, **111** demanding 3+
+years, **3** open to a graduate — and **0** that state a 0-1 year bar, so all
+three qualify by omission rather than invitation. That distinction became its
+own stored field (`explicit_entry`) rather than a footnote.
+
+Two further things settled here:
+- **The dead-board rule shipped.** Cybereason's 404 had left 5 postings open
+  forever; `retire-boards` closes them with `closed_reason='board_retired'`,
+  and a retired board still counts toward a *complete* sweep because its
+  absence is accounted for, unlike a board that failed to answer.
+- **`CREATE TABLE IF NOT EXISTS` silently skips new columns** on an existing
+  database, so the schema diverged between a fresh clone and the running one.
+  Every column added after a table ships now needs its own idempotent
+  `ALTER ... ADD COLUMN IF NOT EXISTS`.
+
+### Original scope, for reference
 
 New table `index_snapshot`: `taken_at`, `parser_version`, `boards_ok`,
 `boards_total`, `status` (`complete`/`partial`), `open_il_eng`,

@@ -13,37 +13,58 @@ It is market analytics, not a job board and not an application bot.
 
 ## What it found
 
-Measured **23 September 2026** across **20 Israeli company job boards**
-(19 returned postings; At-Bay's board was live but empty), **900 open postings**,
-**192 of them located in Israel**:
+Snapshot of **18 October 2026**, from **20 Israeli company job boards**
+(19 answered; Cybereason's board has been retired), **916 open postings**:
 
 | | |
 |---|---|
-| Open roles located in Israel | **192** |
-| With a junior / graduate / student / intern title | **1** — and it was *Employer Branding Student*, not engineering |
-| Explicitly asking for 3+ years of experience | **135 of 192** |
+| Open roles located in Israel | **206** |
+| …that are engineering | **123** |
+| …whose stated bar is 3+ years | **111 of 123** |
+| …open to a graduate with no experience | **3** (2.4%) |
+| …that actually invite 0-1 years | **0** |
+| …requiring a degree | **50** |
+| Junior-titled roles in Israel, any field | **1** — *Employer Branding Student*, not engineering |
+
+Read the fourth and fifth rows together, because that pair says more than the
+headline: three roles are open to a graduate, and **not one of the 123 states
+a 0-1 year bar**. All three qualify by mentioning no requirement at all. The
+door is not ajar — it is unlabelled.
+
+A finding of its own: **searching for the word "Israel" does not find the
+Israeli market.** Only 119 of those 206 roles contain "Israel" anywhere in the
+location field — `Tel Aviv` alone is the most common value. Any analysis built
+on a country-name filter is missing about 42% of the market.
 
 Companies sampled: AppsFlyer, At-Bay, Augury, Bringg, Cato Networks,
 Cybereason, Fireblocks, Island, JFrog, Lightricks, Melio, NICE, Optimove,
 Orca Security, Pagaya, Riskified, Similarweb, Taboola, Via, Yotpo.
 
-That is the finding the rest of this project exists to keep measuring: whether
-the junior door at Israeli product companies stays shut, and which parts of the
-market are open instead.
+Every definition behind these numbers — what counts as Israel, as engineering,
+as a years requirement — is written down in **[METHOD.md](METHOD.md)**, along
+with the limits of the sample and the specific wrong numbers this pipeline
+refuses to produce. Errors in the method are worth more to me than agreement
+with the conclusions.
 
-The exact query behind these numbers is being moved out of ad-hoc SQL and into
-code (`junior-il index`, with the rules written up in `METHOD.md`) so that
-anyone can reproduce or contest them. See [PLAN.md](PLAN.md).
+### Earlier measurement
+
+23 September 2026, same boards: 192 roles in Israel, 1 junior-titled, 135
+asking 3+ years. Those figures predate the normalizer and are not directly
+comparable — they came from ad-hoc SQL over descriptions that still contained
+unstripped markup. The October numbers are the first produced by code.
 
 ## Status
 
 | Stage | What | State |
 |---|---|---|
 | 1 | Ingest: public ATS boards → Postgres | **done** |
-| 2 | Normalizer: location, seniority, minimum years, Hebrew titles | in progress |
-| 3 | The index: reproducible snapshots + published method | next |
+| 2 | Normalizer: location, seniority, experience bar, Hebrew titles | **done** |
+| 3 | The index: reproducible snapshots + published method | **done** |
 | 4 | Public page, scheduled updates, CI | next |
-| 5 | Read API (Java 21 / Spring Boot) over the normalized data | after launch |
+| 5 | Comeet source, to roughly double Israeli coverage | next |
+| 6 | Read API (Java 21 / Spring Boot) over the normalized data | after launch |
+
+82 tests, no network required. `pytest` from the repo root.
 
 ## How the numbers are kept honest
 
@@ -84,11 +105,14 @@ cannot see:
 ## Running it
 
 ```bash
-docker compose up -d                       # Postgres 17 on :55432, schema auto-applied
+docker compose up -d                            # Postgres 17 on :55432
 cd ingest
 python3.13 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
-.venv/bin/python -m junior_il.cli ingest   # poll every board
-.venv/bin/python -m junior_il.cli stats    # what landed
+.venv/bin/python -m junior_il.cli initdb
+.venv/bin/python -m junior_il.cli ingest        # poll every board
+.venv/bin/python -m junior_il.cli retire-boards # close boards that vanished
+.venv/bin/python -m junior_il.cli normalize     # derive posting_norm
+.venv/bin/python -m junior_il.cli index         # the index, printed
 cd .. && ingest/.venv/bin/python -m pytest -q
 ```
 
