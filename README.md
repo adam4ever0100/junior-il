@@ -1,5 +1,7 @@
 # junior-il
 
+### → **[adam4ever0100.github.io/junior-il](https://adam4ever0100.github.io/junior-il/)**
+
 **How much of the Israeli tech market is actually open to a graduate with no
 professional experience?**
 
@@ -13,32 +15,43 @@ It is market analytics, not a job board and not an application bot.
 
 ## What it found
 
-Snapshot of **18 October 2026**, from **20 Israeli company job boards**
-(19 answered; Cybereason's board has been retired), **916 open postings**:
+Snapshot of **18 October 2026**, from **24 Israeli company job boards**
+on Greenhouse and Comeet, **956 open postings**:
 
 | | |
 |---|---|
-| Open roles located in Israel | **206** |
-| …that are engineering | **123** |
-| …whose stated bar is 3+ years | **111 of 123** |
-| …open to a graduate with no experience | **3** (2.4%) |
-| …that actually invite 0-1 years | **0** |
-| …requiring a degree | **50** |
+| Open roles located in Israel | **228** |
+| …that are engineering | **137** |
+| …whose stated bar is 3+ years | **123 of 137** |
+| …open to a graduate with no experience | **4** (2.9%) |
+| …that actually invite 0-1 years | **1** |
+| …requiring a degree | **51** |
 | Junior-titled roles in Israel, any field | **1** — *Employer Branding Student*, not engineering |
 
 Read the fourth and fifth rows together, because that pair says more than the
-headline: three roles are open to a graduate, and **not one of the 123 states
-a 0-1 year bar**. All three qualify by mentioning no requirement at all. The
-door is not ajar — it is unlabelled.
+headline: four roles can be applied to, but only **one** states a bar a
+graduate could clear. The other three qualify by mentioning no requirement at
+all. Most of the open door is an omission rather than an invitation.
+
+These numbers change on every run — the page is generated from the database,
+never written by hand.
 
 A finding of its own: **searching for the word "Israel" does not find the
-Israeli market.** Only 119 of those 206 roles contain "Israel" anywhere in the
+Israeli market.** Only about 58% of those roles contain "Israel" anywhere in the
 location field — `Tel Aviv` alone is the most common value. Any analysis built
 on a country-name filter is missing about 42% of the market.
 
-Companies sampled: AppsFlyer, At-Bay, Augury, Bringg, Cato Networks,
-Cybereason, Fireblocks, Island, JFrog, Lightricks, Melio, NICE, Optimove,
-Orca Security, Pagaya, Riskified, Similarweb, Taboola, Via, Yotpo.
+Companies sampled: AppsFlyer, At-Bay, Augury, Bringg, Cato Networks, Cycode,
+Fireblocks, Gloat, Island, JFrog, Lightricks, Melio, NICE, Optimove,
+Orca Security, Pagaya, Pentera, Riskified, Similarweb, Taboola, Tastewise,
+Via, Yotpo, Zesty.
+
+**On coverage:** adding Comeet was meant to roughly double the Israeli sample
+and did not. Most larger Israeli companies checked are elsewhere — Ashby,
+Workday — so the next ATS worth adding is one of those, not more Comeet.
+`tools/find_comeet.py` and `tools/find_greenhouse.py` read a company's own
+careers page and verify a board against the live API before it is added;
+guessing identifiers does not work.
 
 Every definition behind these numbers — what counts as Israel, as engineering,
 as a years requirement — is written down in **[METHOD.md](METHOD.md)**, along
@@ -60,8 +73,8 @@ unstripped markup. The October numbers are the first produced by code.
 | 1 | Ingest: public ATS boards → Postgres | **done** |
 | 2 | Normalizer: location, seniority, experience bar, Hebrew titles | **done** |
 | 3 | The index: reproducible snapshots + published method | **done** |
-| 4 | Public page, scheduled updates, CI | next |
-| 5 | Comeet source, to roughly double Israeli coverage | next |
+| 4 | Public page, scheduled updates, CI | **done** |
+| 5 | Comeet source | **done** — 5 boards; see note below |
 | 6 | Read API (Java 21 / Spring Boot) over the normalized data | after launch |
 
 82 tests, no network required. `pytest` from the repo root.

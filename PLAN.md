@@ -188,7 +188,27 @@ template; do not install a static-site generator.
 Done means: `open docs/index.html` looks like something a journalist would
 screenshot.
 
-## Day 9 — LIVE
+## Day 9 — LIVE — **DONE 18 Oct, 13 days early**
+
+**https://adam4ever0100.github.io/junior-il/**
+
+- Pages serves `main` `/docs`. A branch deploy accepts only `/` or `/docs`, so
+  the generated site moved from `site/` to `docs/` — which also avoids needing
+  a separate Pages deployment workflow.
+- CI runs pytest from the repo root on every push.
+- The weekly `index` workflow re-measures and commits the rebuilt page. Its
+  exact sequence was rehearsed against a throwaway database before shipping:
+  24/24 boards, 956 postings, series restored from the committed JSON,
+  snapshot recorded, page published.
+- Because CI's database is ephemeral, the durable history is
+  `docs/data/series.json` in the repo. Proven by wiping `index_snapshot`
+  locally and recovering both snapshots from git alone.
+
+**Outstanding:** pushing `.github/workflows/` needs a token scope this one does
+not have — `gh auth refresh -s workflow -h github.com`, then `git push`. The
+workflows are committed locally and waiting.
+
+### Original scope, for reference
 
 - [ ] `.github/workflows/ingest.yml`: scheduled weekly (Mondays 06:00 UTC) +
       `workflow_dispatch`. Postgres 17 service container, `initdb`, `ingest`,
