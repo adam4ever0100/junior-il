@@ -1,6 +1,7 @@
 """Generate the published page.
 
-One static HTML file plus the JSON behind it, written to `site/`. No build
+One static HTML file plus the JSON behind it, written to `docs/` — the directory name GitHub Pages
+    will serve from a branch, which is why it is not called `site`. No build
 step, no framework, no server: a scheduled job regenerates the files and
 commits them, which also means the data's history lives in git where anyone
 can audit how a number changed.
@@ -35,6 +36,17 @@ BUCKET_LABELS = {
 def _json_for_script(payload: Any) -> str:
     """JSON safe to inline in a <script> tag."""
     return json.dumps(payload, default=str).replace("</", "<\\/")
+
+
+def _day(taken_at: Any) -> str:
+    """A date, whether it came from Postgres or from a JSON round-trip.
+
+    The series is reloaded from published JSON in CI, where timestamps arrive
+    as strings rather than datetimes.
+    """
+    if isinstance(taken_at, str):
+        return taken_at[:10]
+    return taken_at.strftime("%Y-%m-%d")
 
 
 def _stat(value: Any, label: str) -> str:
@@ -91,7 +103,7 @@ def render_html(
     }
     # Oldest first, so the line reads left to right.
     trend = [
-        {"date": row["taken_at"].strftime("%Y-%m-%d"),
+        {"date": _day(row["taken_at"]),
          "pct": float(row["pct_junior_eligible"] or 0),
          "eligible": row["junior_eligible"],
          "total": row["open_israel_eng"]}

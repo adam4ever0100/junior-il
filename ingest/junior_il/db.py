@@ -393,14 +393,55 @@ def insert_snapshot(conn: psycopg.Connection, fields: dict) -> int:
         return cur.fetchone()["id"]
 
 
-def snapshot_series(conn: psycopg.Connection, limit: int = 24) -> list[dict]:
+SNAPSHOT_COLUMNS = (
+    "taken_at", "parser_version", "status", "boards_total", "boards_ok",
+    "boards_retired", "open_total", "open_israel", "open_israel_eng",
+    "junior_eligible", "pct_junior_eligible", "explicit_entry", "bar_3plus",
+    "years_unstated", "years_vague", "junior_titled", "degree_required",
+    "clearance_required", "notes",
+)
+
+
+def snapshot_series(conn: psycopg.Connection, limit: int = 240) -> list[dict]:
+    """Every snapshot, every column.
+
+    All of it, because the published series.json is the only durable copy: CI
+    runs against a throwaway database, so the history lives in git rather than
+    in Postgres. A partial projection here would quietly truncate the record.
+    """
     with conn.cursor() as cur:
-        cur.execute("""
-            SELECT taken_at, status, open_israel_eng, junior_eligible,
-                   pct_junior_eligible, bar_3plus, parser_version
-              FROM index_snapshot ORDER BY taken_at DESC LIMIT %s
-        """, (limit,))
+        cur.execute(
+            f"SELECT {', '.join(SNAPSHOT_COLUMNS)} FROM index_snapshot "
+            "ORDER BY taken_at DESC LIMIT %s",
+            (limit,),
+        )
         return cur.fetchall()
+
+
+def restore_snapshots(conn: psycopg.Connection, rows: list[dict]) -> int:
+    """Re-seed index_snapshot from a published series.
+
+    Snapshots already present (same taken_at) are left alone, so running this
+    against a populated database is a no-op rather than a duplication.
+    """
+    restored = 0
+    with conn.cursor() as cur:
+        for row in rows:
+            fields = {k: row.get(k) for k in SNAPSHOT_COLUMNS if k in row}
+            if not fields.get("taken_at"):
+                continue
+            cur.execute("SELECT 1 FROM index_snapshot WHERE taken_at = %s",
+                        (fields["taken_at"],))
+            if cur.fetchone():
+                continue
+            columns = ", ".join(fields)
+            placeholders = ", ".join(f"%({k})s" for k in fields)
+            cur.execute(
+                f"INSERT INTO index_snapshot ({columns}) VALUES ({placeholders})",
+                fields,
+            )
+            restored += 1
+    return restored
 
 
 def company_breakdown(conn: psycopg.Connection, parser_version: str) -> list[dict]:

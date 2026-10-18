@@ -153,7 +153,7 @@ in METHOD.md.** Coverage can grow after launch.
 
 ## Days 7-8 — the static site — **DONE 18 Oct**
 
-`junior-il publish` writes `site/index.html` plus `site/data/{latest,series}.json`.
+`junior-il publish` writes `docs/index.html` plus `docs/data/{latest,series}.json`.
 Stdlib templating, Chart.js pinned from cdnjs, no build step, no framework.
 Verified in a real browser: charts paint, no console errors, no horizontal
 scroll at 375px, dark mode via `prefers-color-scheme`. 104 tests.
@@ -162,7 +162,7 @@ Two bugs found by looking at the rendered page rather than the code:
 - **The "0-1 years" bar was missing from the chart.** A `GROUP BY` omits a
   bucket with no rows, so the single fact the page exists to show was invisible.
   Every bucket is now drawn, and an absence appears as a flat zero.
-- **`.gitignore`'s bare `data/` matched `site/data/`**, so the published JSON
+- **`.gitignore`'s bare `data/` matched the published data directory**, so the JSON
   would have been silently excluded — breaking the `latest.json` link and
   losing the data history that is the whole reason for committing it. Anchored
   to `/data/`. (An inline `#` comment on that line would have been part of the
@@ -170,13 +170,13 @@ Two bugs found by looking at the rendered page rather than the code:
 
 ### Original scope, for reference
 
-`junior-il publish --out site/` generates:
-- `site/index.html` — one headline number, big; one bar chart (roles by
+`junior-il publish --out docs/` generates:
+- `docs/index.html` — one headline number, big; one bar chart (roles by
   minimum-years bucket: 0-1 / 2 / 3-4 / 5+ / unstated); one table of companies
   with open-Israel-engineering counts and junior-eligible counts; a line chart
   of the snapshot series (it will have one point at launch — that is fine, it
   is the reason to come back next month).
-- `site/data/latest.json` and `site/data/series.json` — committed, so the data
+- `docs/data/latest.json` and `site/data/series.json` — committed, so the data
   is downloadable and the history is in git.
 - Footer: method link, last-updated timestamp, board count, your name, email,
   LinkedIn. **The point of the whole project is that your name is on the
@@ -185,18 +185,18 @@ Two bugs found by looking at the rendered page rather than the code:
 Chart.js from a CDN, no build step, no framework. Jinja2 or an f-string
 template; do not install a static-site generator.
 
-Done means: `open site/index.html` looks like something a journalist would
+Done means: `open docs/index.html` looks like something a journalist would
 screenshot.
 
 ## Day 9 — LIVE
 
 - [ ] `.github/workflows/ingest.yml`: scheduled weekly (Mondays 06:00 UTC) +
       `workflow_dispatch`. Postgres 17 service container, `initdb`, `ingest`,
-      `normalize`, `index --snapshot`, `publish`, then commit `site/` back to
+      `normalize`, `index --snapshot`, `publish`, then commit `docs/` back to
       the repo.
 - [ ] `.github/workflows/ci.yml`: pytest on every push. This is the GitHub
       Actions line on your CV, earned.
-- [ ] GitHub Pages from `/site` on `main`. Custom domain only if it takes
+- [ ] GitHub Pages from `/docs` on `main` (a branch deploy only accepts `/` or `/docs`). Custom domain only if it takes
       under 20 minutes.
 - [ ] Run the workflow manually once and watch the page change.
 

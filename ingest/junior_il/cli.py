@@ -1,5 +1,6 @@
 """Command line entry point: python -m junior_il.cli <command>"""
 import argparse
+import json
 import logging
 import sys
 from pathlib import Path
@@ -135,6 +136,23 @@ def cmd_index(args) -> int:
     return 0
 
 
+def cmd_restore_series(args) -> int:
+    """Load a published series.json back into an empty index_snapshot.
+
+    CI runs against a throwaway Postgres, so without this every scheduled run
+    would publish a chart with exactly one point on it.
+    """
+    path = Path(args.path)
+    if not path.exists():
+        print(f"no series at {path}; starting a fresh history")
+        return 0
+    rows = json.loads(path.read_text(encoding="utf-8"))
+    with db.connect(args.dsn) as conn:
+        restored = db.restore_snapshots(conn, rows)
+    print(f"restored {restored} snapshot(s) from {path}")
+    return 0
+
+
 def cmd_publish(args) -> int:
     """Write the static site. Reads the database; decides nothing itself."""
     with db.connect(args.dsn) as conn:
@@ -193,9 +211,15 @@ def main(argv=None) -> int:
                            help="record even when the sweep was incomplete")
     index_cmd.set_defaults(func=cmd_index)
 
+    restore = sub.add_parser("restore-series",
+                             help="re-seed index_snapshot from a published series.json")
+    restore.add_argument("path", nargs="?",
+                         default=str(REPO_ROOT / "docs" / "data" / "series.json"))
+    restore.set_defaults(func=cmd_restore_series)
+
     publish = sub.add_parser("publish", help="generate the static site")
-    publish.add_argument("--out", default=str(REPO_ROOT / "site"),
-                         help="output directory (default: ./site)")
+    publish.add_argument("--out", default=str(REPO_ROOT / "docs"),
+                         help="output directory (default: ./docs)")
     publish.set_defaults(func=cmd_publish)
 
     args = parser.parse_args(argv)
