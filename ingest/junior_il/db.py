@@ -1,7 +1,7 @@
 """Postgres access. Small and explicit — no ORM."""
-import json
+import hashlib
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Iterable, Iterator, Optional
 
 import psycopg
@@ -165,3 +165,102 @@ def finish_run(
         (status, stats.fetched, stats.inserted, stats.updated, stats.unchanged,
          stats.closed, error, run_id),
     )
+
+
+# --- normalization -------------------------------------------------------
+
+POSTING_COLUMNS = "id, source, board_token, company, title, location_raw, department, description, url"
+
+
+def iter_postings(
+    conn: psycopg.Connection, only_open: bool = True, batch: int = 500
+) -> Iterator[dict]:
+    """Stream postings for normalization, so a 1200-row corpus (or a 100k one
+    later) never has to be held in memory at once."""
+    where = "WHERE closed_at IS NULL" if only_open else ""
+    with conn.cursor(name="postings_cursor") as cur:
+        cur.itersize = batch
+        cur.execute(f"SELECT {POSTING_COLUMNS} FROM posting {where} ORDER BY id")
+        yield from cur
+
+
+UPSERT_NORM = """
+INSERT INTO posting_norm (
+    posting_id, parser_version, normalized_at, is_israel, il_cities, is_remote,
+    is_engineering, seniority, junior_signal, years_stated, years_vague, years_floor,
+    years_bar, years_evidence, degree_required, clearance_required,
+    junior_eligible
+) VALUES (
+    %(posting_id)s, %(parser_version)s, now(), %(is_israel)s, %(il_cities)s,
+    %(is_remote)s, %(is_engineering)s, %(seniority)s, %(junior_signal)s,
+    %(years_stated)s, %(years_vague)s, %(years_floor)s, %(years_bar)s, %(years_evidence)s,
+    %(degree_required)s, %(clearance_required)s, %(junior_eligible)s
+)
+ON CONFLICT (posting_id) DO UPDATE SET
+    parser_version = EXCLUDED.parser_version,
+    normalized_at  = now(),
+    is_israel      = EXCLUDED.is_israel,
+    il_cities      = EXCLUDED.il_cities,
+    is_remote      = EXCLUDED.is_remote,
+    is_engineering = EXCLUDED.is_engineering,
+    seniority      = EXCLUDED.seniority,
+    junior_signal  = EXCLUDED.junior_signal,
+    years_stated   = EXCLUDED.years_stated,
+    years_vague    = EXCLUDED.years_vague,
+    years_floor    = EXCLUDED.years_floor,
+    years_bar      = EXCLUDED.years_bar,
+    years_evidence = EXCLUDED.years_evidence,
+    degree_required    = EXCLUDED.degree_required,
+    clearance_required = EXCLUDED.clearance_required,
+    junior_eligible    = EXCLUDED.junior_eligible
+"""
+
+
+def upsert_norm(conn: psycopg.Connection, rows: Iterable) -> int:
+    """Write normalized rows. Takes NormalizedPosting dataclasses."""
+    count = 0
+    with conn.cursor() as cur:
+        for row in rows:
+            cur.execute(UPSERT_NORM, asdict(row))
+            count += 1
+    return count
+
+
+def reparse_descriptions(conn: psycopg.Connection, parse) -> tuple[int, int]:
+    """Re-derive `posting.description` from the stored raw payload.
+
+    Needed because the first ingest stored descriptions that still contained
+    literal markup: Greenhouse sends HTML-escaped HTML, so one stripping pass
+    turned "&lt;li&gt;" into the text "<li>" instead of a line break. No
+    re-fetch is required — the untouched ATS payload is in `posting.raw`, which
+    is the whole reason it is kept.
+
+    `content_changed_at` is deliberately left alone. Our parser improving is
+    not the employer editing the posting, and moving it would show up as a wave
+    of fake edits on exactly the date the bug was fixed.
+    """
+    checked = changed = 0
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT id, title, location_raw, department, url, description,"
+            "       raw->>'content' AS raw_content"
+            "  FROM posting WHERE raw->>'content' IS NOT NULL ORDER BY id"
+        )
+        rows = cur.fetchall()
+        for row in rows:
+            checked += 1
+            fresh = parse(row["raw_content"] or "")
+            if fresh == row["description"]:
+                continue
+            digest = hashlib.sha256(
+                "\x1f".join([
+                    row["title"], row["location_raw"], row["department"],
+                    fresh, row["url"],
+                ]).encode("utf-8")
+            ).hexdigest()
+            cur.execute(
+                "UPDATE posting SET description = %s, content_hash = %s WHERE id = %s",
+                (fresh, digest, row["id"]),
+            )
+            changed += 1
+    return checked, changed

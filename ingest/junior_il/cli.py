@@ -6,15 +6,38 @@ from pathlib import Path
 
 from junior_il import db
 from junior_il.boards import ALL_BOARDS
+from junior_il.htmltext import html_to_text
 from junior_il.ingest import ingest_all
+from junior_il.normalize import PARSER_VERSION, normalize_posting
 
-SCHEMA = Path(__file__).resolve().parents[2] / "sql" / "001_schema.sql"
+SQL_DIR = Path(__file__).resolve().parents[2] / "sql"
+SCHEMA_FILES = ("001_schema.sql", "002_normalize.sql")
 
 
 def cmd_initdb(args) -> int:
     with db.connect(args.dsn) as conn:
-        db.apply_schema(conn, str(SCHEMA))
-    print(f"schema applied from {SCHEMA}")
+        for name in SCHEMA_FILES:
+            db.apply_schema(conn, str(SQL_DIR / name))
+            print(f"applied {name}")
+    return 0
+
+
+def cmd_reparse(args) -> int:
+    """Re-derive descriptions from the stored raw payload, no network."""
+    with db.connect(args.dsn) as conn:
+        checked, changed = db.reparse_descriptions(conn, html_to_text)
+    print(f"{changed}/{checked} descriptions rewritten from raw payload")
+    if changed:
+        print("re-run `normalize` so the rules see the corrected text")
+    return 0
+
+
+def cmd_normalize(args) -> int:
+    with db.connect(args.dsn) as conn:
+        rows = (normalize_posting(row) for row in db.iter_postings(conn, only_open=not args.all))
+        written = db.upsert_norm(conn, rows)
+    scope = "all" if args.all else "open"
+    print(f"normalized {written} {scope} postings with parser {PARSER_VERSION}")
     return 0
 
 
@@ -77,6 +100,17 @@ def main(argv=None) -> int:
     ingest.set_defaults(func=cmd_ingest)
 
     sub.add_parser("stats", help="what is in the database").set_defaults(func=cmd_stats)
+
+    sub.add_parser(
+        "reparse", help="rebuild descriptions from stored raw payloads"
+    ).set_defaults(func=cmd_reparse)
+
+    normalize = sub.add_parser("normalize", help="derive posting_norm from posting")
+    normalize.add_argument(
+        "--all", action="store_true",
+        help="include closed postings (default: only those still open)",
+    )
+    normalize.set_defaults(func=cmd_normalize)
 
     args = parser.parse_args(argv)
     logging.basicConfig(

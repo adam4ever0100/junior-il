@@ -28,17 +28,42 @@ Not a job board. Not a bot that applies. Market analytics.
 
 ## Day 0 — today, 1 hour
 
-- [ ] `git init` is done; create the **public** GitHub repo `junior-il` and push.
-- [ ] Rewrite `README.md` as the project's pitch, not setup notes: what the
+- [x] `git init` is done; create the **public** GitHub repo `junior-il` and push. → https://github.com/adam4ever0100/junior-il
+- [x] Rewrite `README.md` as the project's pitch, not setup notes: what the
       index measures, why nobody else publishes it, how to reproduce it.
-- [ ] Add `.gitignore` entries for `.venv/`, `__pycache__/`, `.pytest_cache/`
+- [x] Add `.gitignore` entries for `.venv/`, `__pycache__/`, `.pytest_cache/`
       (they are currently sitting in the tree).
-- [ ] `docker compose up -d` and confirm the existing ~900 postings survived in
+- [x] `docker compose up -d` and confirm the existing ~900 postings survived in
       the `pgdata` volume. If not, re-run `ingest` — it is idempotent.
 
 Done means: a public link exists. Even empty, it is a link.
 
-## Days 1-3 — the normalizer (the real intellectual work)
+## Days 1-3 — the normalizer — **DONE 18 Oct**
+
+Shipped as `ingest/junior_il/normalize/` (location, years, titles, clauses,
+core) plus `posting_norm`, `junior-il normalize`, and 54 new tests. Four things
+turned up that were not in the plan:
+
+- **`html_to_text` was silently broken.** Greenhouse sends HTML-escaped HTML,
+  so one stripping pass produced literal "<li>" text and destroyed the line
+  structure every years regex depends on. All 921 descriptions were affected.
+  Fixed with a bounded second pass, and `junior-il reparse` rebuilt every
+  description **from the stored raw payload, with no re-fetch** — which is the
+  concrete payoff of keeping `raw`.
+- **`years_min`/`years_max` were the wrong names.** What matters is the
+  steepest requirement, because all of them must be met: "7+ years overall,
+  1+ years with Kafka" is a seven-year job. Renamed to `years_floor` (gentlest,
+  kept for auditing) and `years_bar` (what a candidate must clear). Published
+  figures use `years_bar`.
+- **"Several years of hands-on experience"** needed its own field
+  (`years_vague`). It was falling into "unstated", which the eligibility rule
+  reads as "no experience required" — a closed door counted as open.
+- **Three bugs the tests caught**, all biasing toward a market that looks more
+  open than it is: `100 years` matched as `00 years` (threshold 0); a
+  parenthetical "(Go is a plus)" demoted an unrelated "6+ years" requirement;
+  and a bare "or equivalent" waived every degree clause.
+
+### Original scope, for reference
 
 New package `ingest/junior_il/normalize/`, pure functions, no DB access, each
 with tests. New table `posting_norm` keyed to `posting.id`, plus
