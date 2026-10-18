@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Junior Hiring Index — Israel</title>
+<meta name="description" content="How much of the Israeli tech market is open to a
+ computer science graduate with no professional experience. Measured from companies'
+ own public job boards, with the method published.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+<style>
+:root {
+  --bg:#fbfaf8; --fg:#1b1a18; --muted:#6b6862; --rule:#e3dfd8;
+  --accent:#b4332b; --card:#fff;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#17161a; --fg:#ece9e4; --muted:#a39e96; --rule:#322f36;
+           --accent:#ff7a6b; --card:#1f1e23; }
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--bg); color:var(--fg);
+  font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  -webkit-text-size-adjust:100%;
+}
+.wrap { max-width:860px; margin:0 auto; padding:48px 16px 72px; }
+h1 { font-size:1.55rem; line-height:1.25; margin:0 0 .4em; letter-spacing:-.01em; }
+h2 { font-size:1.05rem; margin:2.6em 0 .7em; letter-spacing:.02em;
+      text-transform:uppercase; color:var(--muted); font-weight:600; }
+p { margin:0 0 1em; max-width:62ch; }
+a { color:var(--accent); }
+.lede { color:var(--muted); }
+.hero { border:1px solid var(--rule); background:var(--card); border-radius:10px;
+        padding:28px 24px; margin:28px 0; }
+.hero-n { font-size:clamp(3.6rem,17vw,6rem); line-height:.9; font-weight:700;
+          letter-spacing:-.04em; color:var(--accent); }
+.hero-c { font-size:1.08rem; margin:.5em 0 0; max-width:48ch; }
+.hero-sub { margin:1.1em 0 0; padding-top:1.1em; border-top:1px solid var(--rule);
+            color:var(--muted); font-size:.95rem; max-width:52ch; }
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+         gap:1px; background:var(--rule); border:1px solid var(--rule);
+         border-radius:10px; overflow:hidden; }
+.stat { background:var(--card); padding:16px 18px; }
+.stat-n { font-size:1.65rem; font-weight:650; letter-spacing:-.02em; }
+.stat-l { color:var(--muted); font-size:.82rem; line-height:1.4; }
+figure { margin:0; }
+.chart { position:relative; height:300px; }
+table { width:100%; border-collapse:collapse; font-size:.92rem; }
+.scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+th,td { text-align:left; padding:9px 12px; border-bottom:1px solid var(--rule);
+        white-space:nowrap; }
+th { color:var(--muted); font-weight:600; font-size:.78rem;
+      text-transform:uppercase; letter-spacing:.04em; }
+td.n { text-align:right; font-variant-numeric:tabular-nums; }
+td.zero { color:var(--muted); }
+.roles { list-style:none; padding:0; margin:0; }
+.roles li { padding:11px 0; border-bottom:1px solid var(--rule); }
+.loc { color:var(--muted); font-size:.85rem; display:block; }
+.none { font-size:1.05rem; }
+footer { margin-top:56px; padding-top:24px; border-top:1px solid var(--rule);
+         color:var(--muted); font-size:.85rem; }
+footer p { max-width:70ch; }
+code { font-size:.85em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>How open is Israeli tech to a graduate with no experience?</h1>
+<p class="lede">Measured from 21 companies' own public job
+boards, not from opinion. Updated automatically; the method is published.</p>
+
+<div class="hero">
+  <div class="hero-n">0</div>
+  <p class="hero-c">of <strong>129</strong> open engineering roles located in
+  Israel state an experience requirement a graduate could meet.</p>
+  <p class="hero-sub">3 can be applied to in total — but only because
+  they state no experience requirement at all, not because they invite someone
+  starting out. The door is not ajar; it is unlabelled.</p>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-n">213</div><div class="stat-l">open roles located in Israel</div></div>
+  <div class="stat"><div class="stat-n">129</div><div class="stat-l">of those, engineering</div></div>
+  <div class="stat"><div class="stat-n">117</div><div class="stat-l">demand 3+ years</div></div>
+  <div class="stat"><div class="stat-n">51</div><div class="stat-l">require a degree</div></div>
+  <div class="stat"><div class="stat-n">1</div><div class="stat-l">junior-titled, any field</div></div>
+</div>
+
+<h2>The experience bar</h2>
+<p>Every stated requirement, read as the steepest figure a candidate must clear.
+A range states its floor: “4–8 years” counts as four. Postings that never
+mention experience are kept separate from postings that ask for none.</p>
+<figure><div class="chart"><canvas id="bars"></canvas></div></figure>
+
+<h2>Where a graduate can apply</h2>
+<ul class="roles"><li><a href="https://www.catonetworks.com/careers/careers-post/4839355101?gh_jid=4839355101" rel="nofollow noopener" target="_blank">MDR Security Analyst (Threat Hunting) — Cato Networks</a> <span class="loc">Tel Aviv District, Israel</span></li><li><a href="https://www.catonetworks.com/careers/careers-post/4648864101?gh_jid=4648864101" rel="nofollow noopener" target="_blank">SW Engineer - Enterprise Browser team — Cato Networks</a> <span class="loc">Tel Aviv District, Israel</span></li><li><a href="https://job-boards.greenhouse.io/similarweb/jobs/8284137" rel="nofollow noopener" target="_blank">Data Analyst — Similarweb</a> <span class="loc">Tel Aviv-Yafo</span></li></ul>
+
+<h2>By company</h2>
+<div class="scroll"><table>
+<thead><tr><th>Company</th><th class="n">IL eng.</th><th class="n">3+ yrs</th>
+<th class="n">5+ yrs</th><th class="n">Open to a grad</th></tr></thead>
+<tbody>
+<tr><td>Cato Networks</td><td class="n">27</td><td class="n">23</td><td class="n">14</td><td class="n">2</td></tr>
+<tr><td>Similarweb</td><td class="n">19</td><td class="n">17</td><td class="n">10</td><td class="n">1</td></tr>
+<tr><td>NICE</td><td class="n">13</td><td class="n">13</td><td class="n">13</td><td class="n zero">0</td></tr>
+<tr><td>Taboola</td><td class="n">12</td><td class="n">12</td><td class="n">5</td><td class="n zero">0</td></tr>
+<tr><td>AppsFlyer</td><td class="n">10</td><td class="n">9</td><td class="n">7</td><td class="n zero">0</td></tr>
+<tr><td>Island</td><td class="n">10</td><td class="n">6</td><td class="n">4</td><td class="n zero">0</td></tr>
+<tr><td>JFrog</td><td class="n">9</td><td class="n">8</td><td class="n">5</td><td class="n zero">0</td></tr>
+<tr><td>Via</td><td class="n">9</td><td class="n">9</td><td class="n">7</td><td class="n zero">0</td></tr>
+<tr><td>Melio</td><td class="n">5</td><td class="n">5</td><td class="n">4</td><td class="n zero">0</td></tr>
+<tr><td>Gloat</td><td class="n">4</td><td class="n">4</td><td class="n">4</td><td class="n zero">0</td></tr>
+<tr><td>Riskified</td><td class="n">4</td><td class="n">4</td><td class="n">1</td><td class="n zero">0</td></tr>
+<tr><td>Cycode</td><td class="n">2</td><td class="n">2</td><td class="n">1</td><td class="n zero">0</td></tr>
+<tr><td>Orca Security</td><td class="n">2</td><td class="n">2</td><td class="n">2</td><td class="n zero">0</td></tr>
+<tr><td>Yotpo</td><td class="n">2</td><td class="n">2</td><td class="n">2</td><td class="n zero">0</td></tr>
+<tr><td>Augury</td><td class="n">1</td><td class="n">1</td><td class="n">0</td><td class="n zero">0</td></tr>
+</tbody></table></div>
+
+<h2>Over time</h2>
+<p>This is the first snapshot. A single measurement is not a trend, so there is nothing to plot yet — come back next month.</p>
+
+<footer>
+<p><strong>Method.</strong> What counts as Israel, as engineering, and as an
+experience requirement is written down in
+<a href="https://github.com/adam4ever0100/junior-il/blob/main/METHOD.md">METHOD.md</a>, together with the limits of
+the sample: 21 company boards on Greenhouse and Comeet
+only, so Workday employers, agencies and roles posted on LinkedIn alone are
+absent. Corrections are worth more to me than agreement —
+<a href="https://github.com/adam4ever0100/junior-il/issues">open an issue</a>.</p>
+<p>Sweep <strong>complete</strong>
+(21/21 boards answered,
+0 retired) · parser
+<code>2026.10.18-1</code> · generated
+2026-10-18 19:20 UTC ·
+<a href="data/latest.json">latest.json</a> ·
+<a href="https://github.com/adam4ever0100/junior-il">source</a></p>
+<p>Built by Adam Abu Saad — B.Sc. Computer Science, Shamoon College of
+Engineering, graduating June 2026. I started measuring this market because I am
+in it, and the data I wanted did not exist.
+<a href="mailto:adamabusaad@gmail.com">adamabusaad@gmail.com</a></p>
+</footer>
+</div>
+
+<script id="payload" type="application/json">{"bars": {"labels": ["0\u20131 years", "2 years", "3\u20134 years", "5+ years", "\u201cseveral years\u201d", "not stated"], "values": [0, 2, 38, 79, 1, 9]}, "trend": [{"date": "2026-10-18", "pct": 2.44, "eligible": 3, "total": 123}]}</script>
+<script>
+window.addEventListener('load', function () {
+  if (typeof Chart === 'undefined') return;
+  var data = JSON.parse(document.getElementById('payload').textContent);
+  var css = getComputedStyle(document.documentElement);
+  var accent = css.getPropertyValue('--accent').trim();
+  var muted = css.getPropertyValue('--muted').trim();
+  var rule = css.getPropertyValue('--rule').trim();
+  Chart.defaults.color = muted;
+  Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+
+  new Chart(document.getElementById('bars'), {
+    type: 'bar',
+    data: { labels: data.bars.labels,
+             datasets: [{ data: data.bars.values, backgroundColor: accent,
+                          borderRadius: 3 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: function (c) {
+          return c.parsed.y + ' roles'; } } } },
+      scales: { x: { grid: { display: false } },
+                 y: { beginAtZero: true, grid: { color: rule },
+                       ticks: { precision: 0 } } } }
+  });
+
+  var trendCanvas = document.getElementById('trend');
+  if (trendCanvas && data.trend.length > 1) {
+    new Chart(trendCanvas, {
+      type: 'line',
+      data: { labels: data.trend.map(function (p) { return p.date; }),
+               datasets: [{ data: data.trend.map(function (p) { return p.pct; }),
+                            borderColor: accent, backgroundColor: accent,
+                            tension: .2, pointRadius: 3 }] },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false },
+          tooltip: { callbacks: { label: function (c) {
+            var p = data.trend[c.dataIndex];
+            return p.eligible + ' of ' + p.total + ' (' + p.pct + '%)'; } } } },
+        scales: { x: { grid: { display: false } },
+                   y: { beginAtZero: true, grid: { color: rule },
+                         ticks: { callback: function (v) { return v + '%'; } } } } }
+    });
+  }
+});
+</script>
+</body>
+</html>

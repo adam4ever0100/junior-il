@@ -401,3 +401,40 @@ def snapshot_series(conn: psycopg.Connection, limit: int = 24) -> list[dict]:
               FROM index_snapshot ORDER BY taken_at DESC LIMIT %s
         """, (limit,))
         return cur.fetchall()
+
+
+def company_breakdown(conn: psycopg.Connection, parser_version: str) -> list[dict]:
+    """Israeli engineering roles per company, with the junior picture."""
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT p.company,
+                   count(*)                                        AS il_eng,
+                   count(*) FILTER (WHERE n.junior_eligible)        AS eligible,
+                   count(*) FILTER (WHERE n.years_bar >= 3)         AS bar_3plus,
+                   count(*) FILTER (WHERE n.years_bar >= 5)         AS bar_5plus
+              FROM posting p
+              JOIN posting_norm n ON n.posting_id = p.id
+                                 AND n.parser_version = %s
+             WHERE p.closed_at IS NULL AND n.is_israel AND n.is_engineering
+             GROUP BY p.company
+             ORDER BY il_eng DESC, p.company
+        """, (parser_version,))
+        return cur.fetchall()
+
+
+def eligible_roles(conn: psycopg.Connection, parser_version: str) -> list[dict]:
+    """The roles a graduate can actually apply to, with links to the employer.
+
+    Only title, company, location and the employer's own URL — never the
+    description text, which belongs to whoever wrote it.
+    """
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT p.company, p.title, p.location_raw, p.url, p.source
+              FROM posting p
+              JOIN posting_norm n ON n.posting_id = p.id
+                                 AND n.parser_version = %s
+             WHERE p.closed_at IS NULL AND n.junior_eligible
+             ORDER BY p.company, p.title
+        """, (parser_version,))
+        return cur.fetchall()

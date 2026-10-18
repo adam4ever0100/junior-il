@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 .venv/
 .env
-data/
+# repo-root scratch only — site/data/ is published and must stay tracked
+/data/
 .pytest_cache/
 .DS_Store

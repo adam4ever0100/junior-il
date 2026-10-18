@@ -1,0 +1,161 @@
+{
+  "generated_at": "2026-10-18T19:20:20.018454+00:00",
+  "index": {
+    "open_total": 926,
+    "open_israel": 213,
+    "open_israel_eng": 129,
+    "junior_eligible": 3,
+    "explicit_entry": 0,
+    "bar_3plus": 117,
+    "years_unstated": 9,
+    "years_vague": 1,
+    "junior_titled": 1,
+    "degree_required": 51,
+    "clearance_required": 0,
+    "parser_version": "2026.10.18-1",
+    "status": "complete",
+    "boards_total": 21,
+    "boards_ok": 21,
+    "boards_retired": 0,
+    "pct_junior_eligible": 2.33,
+    "notes": null
+  },
+  "experience_bar": {
+    "2": 2,
+    "3-4": 38,
+    "5+": 79,
+    "unquantified": 1,
+    "unstated": 9
+  },
+  "companies": [
+    {
+      "company": "Cato Networks",
+      "il_eng": 27,
+      "eligible": 2,
+      "bar_3plus": 23,
+      "bar_5plus": 14
+    },
+    {
+      "company": "Similarweb",
+      "il_eng": 19,
+      "eligible": 1,
+      "bar_3plus": 17,
+      "bar_5plus": 10
+    },
+    {
+      "company": "NICE",
+      "il_eng": 13,
+      "eligible": 0,
+      "bar_3plus": 13,
+      "bar_5plus": 13
+    },
+    {
+      "company": "Taboola",
+      "il_eng": 12,
+      "eligible": 0,
+      "bar_3plus": 12,
+      "bar_5plus": 5
+    },
+    {
+      "company": "AppsFlyer",
+      "il_eng": 10,
+      "eligible": 0,
+      "bar_3plus": 9,
+      "bar_5plus": 7
+    },
+    {
+      "company": "Island",
+      "il_eng": 10,
+      "eligible": 0,
+      "bar_3plus": 6,
+      "bar_5plus": 4
+    },
+    {
+      "company": "JFrog",
+      "il_eng": 9,
+      "eligible": 0,
+      "bar_3plus": 8,
+      "bar_5plus": 5
+    },
+    {
+      "company": "Via",
+      "il_eng": 9,
+      "eligible": 0,
+      "bar_3plus": 9,
+      "bar_5plus": 7
+    },
+    {
+      "company": "Melio",
+      "il_eng": 5,
+      "eligible": 0,
+      "bar_3plus": 5,
+      "bar_5plus": 4
+    },
+    {
+      "company": "Gloat",
+      "il_eng": 4,
+      "eligible": 0,
+      "bar_3plus": 4,
+      "bar_5plus": 4
+    },
+    {
+      "company": "Riskified",
+      "il_eng": 4,
+      "eligible": 0,
+      "bar_3plus": 4,
+      "bar_5plus": 1
+    },
+    {
+      "company": "Cycode",
+      "il_eng": 2,
+      "eligible": 0,
+      "bar_3plus": 2,
+      "bar_5plus": 1
+    },
+    {
+      "company": "Orca Security",
+      "il_eng": 2,
+      "eligible": 0,
+      "bar_3plus": 2,
+      "bar_5plus": 2
+    },
+    {
+      "company": "Yotpo",
+      "il_eng": 2,
+      "eligible": 0,
+      "bar_3plus": 2,
+      "bar_5plus": 2
+    },
+    {
+      "company": "Augury",
+      "il_eng": 1,
+      "eligible": 0,
+      "bar_3plus": 1,
+      "bar_5plus": 0
+    }
+  ],
+  "junior_eligible_roles": [
+    {
+      "company": "Cato Networks",
+      "title": "MDR Security Analyst (Threat Hunting)",
+      "location_raw": "Tel Aviv District, Israel",
+      "url": "https://www.catonetworks.com/careers/careers-post/4839355101?gh_jid=4839355101",
+      "source": "greenhouse"
+    },
+    {
+      "company": "Cato Networks",
+      "title": "SW Engineer - Enterprise Browser team",
+      "location_raw": "Tel Aviv District, Israel",
+      "url": "https://www.catonetworks.com/careers/careers-post/4648864101?gh_jid=4648864101",
+      "source": "greenhouse"
+    },
+    {
+      "company": "Similarweb",
+      "title": "Data Analyst",
+      "location_raw": "Tel Aviv-Yafo",
+      "url": "https://job-boards.greenhouse.io/similarweb/jobs/8284137",
+      "source": "greenhouse"
+    }
+  ],
+  "method": "https://github.com/adam4ever0100/junior-il/blob/main/METHOD.md"
+}

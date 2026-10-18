@@ -8,10 +8,12 @@ from junior_il import db
 from junior_il.boards import ALL_BOARDS
 from junior_il.htmltext import html_to_text
 from junior_il import index as index_mod
+from junior_il import site
 from junior_il.ingest import ingest_all
 from junior_il.normalize import PARSER_VERSION, normalize_posting
 
-SQL_DIR = Path(__file__).resolve().parents[2] / "sql"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SQL_DIR = REPO_ROOT / "sql"
 SCHEMA_FILES = ("001_schema.sql", "002_normalize.sql", "003_index.sql")
 
 
@@ -133,6 +135,28 @@ def cmd_index(args) -> int:
     return 0
 
 
+def cmd_publish(args) -> int:
+    """Write the static site. Reads the database; decides nothing itself."""
+    with db.connect(args.dsn) as conn:
+        try:
+            counts = index_mod.compute(conn, ALL_BOARDS)
+        except index_mod.StaleNormalization as exc:
+            print(f"refusing to publish: {exc}", file=sys.stderr)
+            return 2
+        version = counts["parser_version"]
+        written = site.build(
+            Path(args.out),
+            counts=counts,
+            histogram=db.years_histogram(conn, version),
+            companies=db.company_breakdown(conn, version),
+            eligible=db.eligible_roles(conn, version),
+            series=db.snapshot_series(conn),
+        )
+    for path in written:
+        print(f"wrote {path}")
+    return 0
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="junior-il")
     parser.add_argument("--dsn", default=None, help="Postgres DSN")
@@ -168,6 +192,11 @@ def main(argv=None) -> int:
     index_cmd.add_argument("--force", action="store_true",
                            help="record even when the sweep was incomplete")
     index_cmd.set_defaults(func=cmd_index)
+
+    publish = sub.add_parser("publish", help="generate the static site")
+    publish.add_argument("--out", default=str(REPO_ROOT / "site"),
+                         help="output directory (default: ./site)")
+    publish.set_defaults(func=cmd_publish)
 
     args = parser.parse_args(argv)
     logging.basicConfig(

@@ -151,7 +151,24 @@ contained addition, not a refactor.
 If day 6 ends and Comeet is not working: **stop, ship with Greenhouse, say so
 in METHOD.md.** Coverage can grow after launch.
 
-## Days 7-8 — the static site
+## Days 7-8 — the static site — **DONE 18 Oct**
+
+`junior-il publish` writes `site/index.html` plus `site/data/{latest,series}.json`.
+Stdlib templating, Chart.js pinned from cdnjs, no build step, no framework.
+Verified in a real browser: charts paint, no console errors, no horizontal
+scroll at 375px, dark mode via `prefers-color-scheme`. 104 tests.
+
+Two bugs found by looking at the rendered page rather than the code:
+- **The "0-1 years" bar was missing from the chart.** A `GROUP BY` omits a
+  bucket with no rows, so the single fact the page exists to show was invisible.
+  Every bucket is now drawn, and an absence appears as a flat zero.
+- **`.gitignore`'s bare `data/` matched `site/data/`**, so the published JSON
+  would have been silently excluded — breaking the `latest.json` link and
+  losing the data history that is the whole reason for committing it. Anchored
+  to `/data/`. (An inline `#` comment on that line would have been part of the
+  pattern, not a comment; it is on its own line.)
+
+### Original scope, for reference
 
 `junior-il publish --out site/` generates:
 - `site/index.html` — one headline number, big; one bar chart (roles by
