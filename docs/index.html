@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Junior Hiring Index — Israel</title>
-<meta name="description" content="How much of the Israeli tech market is open to a
- computer science graduate with no professional experience. Measured from companies'
- own public job boards, with the method published.">
+<meta name="description" content="How much of the Israeli tech market is open to a computer science graduate with no professional experience. Measured from companies&#x27; own public job boards, with the method published.">
+<link rel="alternate" hreflang="en" href="index.html">
+<link rel="alternate" hreflang="he" href="he.html">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
 <style>
 :root {
@@ -30,6 +30,7 @@ h2 { font-size:1.05rem; margin:2.6em 0 .7em; letter-spacing:.02em;
 p { margin:0 0 1em; max-width:62ch; }
 a { color:var(--accent); }
 .lede { color:var(--muted); }
+.langs { float:inline-end; font-size:.9rem; }
 .hero { border:1px solid var(--rule); background:var(--card); border-radius:10px;
         padding:28px 24px; margin:28px 0; }
 .hero-n { font-size:clamp(3.6rem,17vw,6rem); line-height:.9; font-weight:700;
@@ -47,11 +48,13 @@ figure { margin:0; }
 .chart { position:relative; height:300px; }
 table { width:100%; border-collapse:collapse; font-size:.92rem; }
 .scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-th,td { text-align:left; padding:9px 12px; border-bottom:1px solid var(--rule);
+/* Logical properties, so the table flips with the document instead of
+   needing a second set of rules for Hebrew. */
+th,td { text-align:start; padding:9px 12px; border-bottom:1px solid var(--rule);
         white-space:nowrap; }
 th { color:var(--muted); font-weight:600; font-size:.78rem;
       text-transform:uppercase; letter-spacing:.04em; }
-td.n { text-align:right; font-variant-numeric:tabular-nums; }
+td.n, th.n { text-align:end; font-variant-numeric:tabular-nums; }
 td.zero { color:var(--muted); }
 .roles { list-style:none; padding:0; margin:0; }
 .roles li { padding:11px 0; border-bottom:1px solid var(--rule); }
@@ -66,14 +69,15 @@ code { font-size:.85em; }
 <body>
 <div class="wrap">
 
+<p class="langs"><a href="he.html" lang="he"
+   hreflang="he">עברית</a></p>
+
 <h1>How open is Israeli tech to a graduate with no experience?</h1>
-<p class="lede">Measured from 24 companies' own public job
-boards, not from opinion. Updated automatically; the method is published.</p>
+<p class="lede">Measured from 24 companies' own public job boards, not from opinion. Updated automatically; the method is published.</p>
 
 <div class="hero">
   <div class="hero-n">1</div>
-  <p class="hero-c">of <strong>137</strong> open engineering roles located in
-  Israel state an experience requirement a graduate could meet.</p>
+  <p class="hero-c">— the number of Israel-based engineering roles, out of <strong>137</strong> open, that state an experience requirement a graduate could meet.</p>
   <p class="hero-sub">4 can be applied to in total: 1 that invites a graduate outright, and 3 that simply state no requirement at all. Most of the open door is an omission rather than an invitation.</p>
 </div>
 
@@ -86,18 +90,17 @@ boards, not from opinion. Updated automatically; the method is published.</p>
 </div>
 
 <h2>The experience bar</h2>
-<p>Every stated requirement, read as the steepest figure a candidate must clear.
-A range states its floor: “4–8 years” counts as four. Postings that never
-mention experience are kept separate from postings that ask for none.</p>
+<p>Every stated requirement, read as the steepest figure a candidate must clear. A range states its floor: “4–8 years” counts as four. Postings that never mention experience are kept separate from postings that ask for none.</p>
 <figure><div class="chart"><canvas id="bars"></canvas></div></figure>
 
 <h2>Where a graduate can apply</h2>
-<ul class="roles"><li><a href="https://www.catonetworks.com/careers/careers-post/4839355101?gh_jid=4839355101" rel="nofollow noopener" target="_blank">MDR Security Analyst (Threat Hunting) — Cato Networks</a> <span class="loc">Tel Aviv District, Israel</span></li><li><a href="https://www.catonetworks.com/careers/careers-post/4648864101?gh_jid=4648864101" rel="nofollow noopener" target="_blank">SW Engineer - Enterprise Browser team — Cato Networks</a> <span class="loc">Tel Aviv District, Israel</span></li><li><a href="https://www.comeet.com/jobs/pentera/C5.00D/ai-security-researcher/20.376" rel="nofollow noopener" target="_blank">AI Security Researcher — Pentera</a> <span class="loc">Israel</span></li><li><a href="https://job-boards.greenhouse.io/similarweb/jobs/8284137" rel="nofollow noopener" target="_blank">Data Analyst — Similarweb</a> <span class="loc">Tel Aviv-Yafo</span></li></ul>
+<ul class="roles"><li dir="auto"><a href="https://www.catonetworks.com/careers/careers-post/4839355101?gh_jid=4839355101" rel="nofollow noopener" target="_blank">MDR Security Analyst (Threat Hunting) — Cato Networks</a> <span class="loc">Tel Aviv District, Israel</span></li><li dir="auto"><a href="https://www.catonetworks.com/careers/careers-post/4648864101?gh_jid=4648864101" rel="nofollow noopener" target="_blank">SW Engineer - Enterprise Browser team — Cato Networks</a> <span class="loc">Tel Aviv District, Israel</span></li><li dir="auto"><a href="https://www.comeet.com/jobs/pentera/C5.00D/ai-security-researcher/20.376" rel="nofollow noopener" target="_blank">AI Security Researcher — Pentera</a> <span class="loc">Israel</span></li><li dir="auto"><a href="https://job-boards.greenhouse.io/similarweb/jobs/8284137" rel="nofollow noopener" target="_blank">Data Analyst — Similarweb</a> <span class="loc">Tel Aviv-Yafo</span></li></ul>
 
 <h2>By company</h2>
 <div class="scroll"><table>
-<thead><tr><th>Company</th><th class="n">IL eng.</th><th class="n">3+ yrs</th>
-<th class="n">5+ yrs</th><th class="n">Open to a grad</th></tr></thead>
+<thead><tr><th>Company</th><th class="n">IL eng.</th>
+<th class="n">3+ yrs</th><th class="n">5+ yrs</th>
+<th class="n">Open to a grad</th></tr></thead>
 <tbody>
 <tr><td>Cato Networks</td><td class="n">27</td><td class="n">23</td><td class="n">14</td><td class="n">2</td></tr>
 <tr><td>Similarweb</td><td class="n">19</td><td class="n">17</td><td class="n">10</td><td class="n">1</td></tr>
@@ -121,28 +124,13 @@ mention experience are kept separate from postings that ask for none.</p>
 <figure><div class="chart"><canvas id="trend"></canvas></div></figure>
 
 <footer>
-<p><strong>Method.</strong> What counts as Israel, as engineering, and as an
-experience requirement is written down in
-<a href="https://github.com/adam4ever0100/junior-il/blob/main/METHOD.md">METHOD.md</a>, together with the limits of
-the sample: 24 company boards on Greenhouse and Comeet
-only, so Workday employers, agencies and roles posted on LinkedIn alone are
-absent. Corrections are worth more to me than agreement —
-<a href="https://github.com/adam4ever0100/junior-il/issues">open an issue</a>.</p>
-<p>Sweep <strong>complete</strong>
-(24/24 boards answered,
-0 retired) · parser
-<code>2026.10.18-1</code> · generated
-2026-10-18 19:30 UTC ·
-<a href="data/latest.json">latest.json</a> ·
-<a href="https://github.com/adam4ever0100/junior-il">source</a></p>
-<p>Built by Adam Abu Saad — B.Sc. Computer Science, Shamoon College of
-Engineering, graduating June 2026. I started measuring this market because I am
-in it, and the data I wanted did not exist.
-<a href="mailto:adamabusaad@gmail.com">adamabusaad@gmail.com</a></p>
+<p><strong>Method.</strong> What counts as Israel, as engineering, and as an experience requirement is written down in <a href="https://github.com/adam4ever0100/junior-il/blob/main/METHOD.md">METHOD.md</a>, together with the limits of the sample: 24 company boards on Greenhouse and Comeet only, so Workday employers, agencies and roles posted on LinkedIn alone are absent. Corrections are worth more to me than agreement — <a href="https://github.com/adam4ever0100/junior-il/issues">open an issue</a>.</p>
+<p>Sweep <strong>complete</strong> (24/24 boards answered, 0 retired) · parser <code>2026.10.18-1</code> · generated 2026-10-18 19:41 UTC · <a href="data/latest.json">latest.json</a> · <a href="https://github.com/adam4ever0100/junior-il">source</a></p>
+<p>Built by Adam Abu Saad — B.Sc. Computer Science, Shamoon College of Engineering, graduating June 2026. I started measuring this market because I am in it, and the data I wanted did not exist. <a href="mailto:adamabusaad@gmail.com">adamabusaad@gmail.com</a></p>
 </footer>
 </div>
 
-<script id="payload" type="application/json">{"bars": {"labels": ["0\u20131 years", "2 years", "3\u20134 years", "5+ years", "\u201cseveral years\u201d", "not stated"], "values": [1, 3, 42, 81, 1, 9]}, "trend": [{"date": "2026-10-18", "pct": 2.44, "eligible": 3, "total": 123}, {"date": "2026-10-18", "pct": 2.92, "eligible": 4, "total": 137}]}</script>
+<script id="payload" type="application/json">{"bars": {"labels": ["0\u20131 years", "2 years", "3\u20134 years", "5+ years", "\u201cseveral years\u201d", "not stated"], "values": [1, 3, 42, 81, 1, 9], "rtl": false, "roles": "roles"}, "trend": [{"date": "2026-10-18", "pct": 2.44, "eligible": 3, "total": 123}, {"date": "2026-10-18", "pct": 2.92, "eligible": 4, "total": 137}]}</script>
 <script>
 window.addEventListener('load', function () {
   if (typeof Chart === 'undefined') return;
@@ -153,6 +141,9 @@ window.addEventListener('load', function () {
   var rule = css.getPropertyValue('--rule').trim();
   Chart.defaults.color = muted;
   Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+  // In an RTL document the value axis belongs on the right, and the
+  // categories read right to left.
+  var axis = data.bars.rtl ? 'right' : 'left';
 
   new Chart(document.getElementById('bars'), {
     type: 'bar',
@@ -161,10 +152,10 @@ window.addEventListener('load', function () {
                           borderRadius: 3 }] },
     options: { responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false },
-        tooltip: { callbacks: { label: function (c) {
-          return c.parsed.y + ' roles'; } } } },
-      scales: { x: { grid: { display: false } },
-                 y: { beginAtZero: true, grid: { color: rule },
+        tooltip: { rtl: data.bars.rtl, callbacks: { label: function (c) {
+          return c.parsed.y + ' ' + data.bars.roles; } } } },
+      scales: { x: { reverse: data.bars.rtl, grid: { display: false } },
+                 y: { position: axis, beginAtZero: true, grid: { color: rule },
                        ticks: { precision: 0 } } } }
   });
 
@@ -178,11 +169,11 @@ window.addEventListener('load', function () {
                             tension: .2, pointRadius: 3 }] },
       options: { responsive: true, maintainAspectRatio: false,
         plugins: { legend: { display: false },
-          tooltip: { callbacks: { label: function (c) {
+          tooltip: { rtl: data.bars.rtl, callbacks: { label: function (c) {
             var p = data.trend[c.dataIndex];
-            return p.eligible + ' of ' + p.total + ' (' + p.pct + '%)'; } } } },
+            return p.eligible + ' / ' + p.total + ' (' + p.pct + '%)'; } } } },
         scales: { x: { grid: { display: false } },
-                   y: { beginAtZero: true, grid: { color: rule },
+                   y: { position: axis, beginAtZero: true, grid: { color: rule },
                          ticks: { callback: function (v) { return v + '%'; } } } } }
     });
   }

@@ -223,7 +223,28 @@ workflows are committed locally and waiting.
 Done means: **a stranger can open the URL.** This is the day the project stops
 being a repo and starts being an asset.
 
-## Days 10-11 — polish, in this priority order
+## Days 10-11 — Hebrew — **DONE 18 Oct**
+
+`docs/he.html`, a real `lang="he" dir="rtl"` document rather than a JavaScript
+toggle: it works with no JS, and a Hebrew URL can be sent straight to a
+Hebrew-reading recruiter. Both pages are generated from the same numbers in one
+pass so they cannot drift, and a test compares the hero, the stat row and the
+chart values across the two.
+
+Layout is direction-agnostic rather than duplicated: logical CSS
+(`text-align: start/end`, `float: inline-end`) flips the table and the language
+link automatically, the chart flips its value axis and reverses its categories
+in RTL, and role rows carry `dir="auto"` so Latin job titles still read
+correctly inside an RTL page.
+
+**The bug worth remembering: both languages inflect with the headline number,
+and that number changes every run.** Hebrew "1 ... מציינות" was wrong, and
+checking it exposed the same fault in the English that was already live —
+"1 ... state an experience requirement". Both captions are now noun phrases
+whose relative clause agrees with "roles", never with the count, and a test
+pins that shape.
+
+### Original polish list, for reference
 
 1. Hebrew/English toggle (one static page, two text blocks, `lang` attribute
    and `dir="rtl"` — not an i18n library).

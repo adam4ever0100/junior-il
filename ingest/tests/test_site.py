@@ -141,7 +141,7 @@ def test_build_writes_the_page_and_its_data(tmp_path):
                          companies=COMPANIES, eligible=ELIGIBLE, series=SERIES,
                          generated_at=NOW)
     names = {path.name for path in written}
-    assert names == {"index.html", "latest.json", "series.json"}
+    assert names == {"index.html", "he.html", "latest.json", "series.json"}
     latest = json.loads((tmp_path / "data" / "latest.json").read_text())
     assert latest["index"]["junior_eligible"] == 3
     assert latest["experience_bar"] == {"5+": 79}
@@ -155,3 +155,93 @@ def test_published_data_carries_no_job_description_text(tmp_path):
     latest = json.loads((tmp_path / "data" / "latest.json").read_text())
     for role in latest["junior_eligible_roles"]:
         assert set(role) == {"company", "title", "location_raw", "url", "source"}
+
+
+# --- Hebrew -------------------------------------------------------------
+
+def test_the_hebrew_page_is_a_proper_rtl_document():
+    html = site.render_html(counts=counts(), histogram=[], companies=COMPANIES,
+                            eligible=ELIGIBLE, series=SERIES, generated_at=NOW,
+                            lang=site.HEBREW)
+    assert '<html lang="he" dir="rtl">' in html
+    assert "\u05de\u05d3\u05d3" in html          # מדד, in the title
+    assert "How open is Israeli tech" not in html
+
+
+def test_the_two_pages_report_identical_numbers():
+    # A translation bug that changed a number would be far worse than an
+    # awkward sentence, so the figures are compared directly.
+    import re
+    pages = {}
+    for lang in site.LANGUAGES:
+        html = site.render_html(counts=counts(), histogram=[{"bucket": "5+", "roles": 79}],
+                                companies=COMPANIES, eligible=ELIGIBLE,
+                                series=SERIES, generated_at=NOW, lang=lang)
+        pages[lang.code] = {
+            "hero": re.search(r'hero-n">(\d+)<', html).group(1),
+            "stats": re.findall(r'stat-n">(\d+)<', html),
+            "bars": payload(html)["bars"]["values"],
+        }
+    assert pages["en"]["hero"] == pages["he"]["hero"]
+    assert pages["en"]["stats"] == pages["he"]["stats"]
+    assert pages["en"]["bars"] == pages["he"]["bars"]
+
+
+def test_each_page_links_to_the_other():
+    en = site.render_html(counts=counts(), histogram=[], companies=COMPANIES,
+                          eligible=ELIGIBLE, series=SERIES, generated_at=NOW,
+                          lang=site.ENGLISH)
+    he = site.render_html(counts=counts(), histogram=[], companies=COMPANIES,
+                          eligible=ELIGIBLE, series=SERIES, generated_at=NOW,
+                          lang=site.HEBREW)
+    assert 'href="he.html"' in en and 'hreflang="he"' in en
+    assert 'href="index.html"' in he and 'hreflang="en"' in he
+
+
+def test_hebrew_hero_claim_also_follows_the_numbers():
+    html = flat(site.render_html(counts=counts(explicit_entry=1, junior_eligible=4),
+                                 histogram=[], companies=COMPANIES, eligible=ELIGIBLE,
+                                 series=SERIES, generated_at=NOW, lang=site.HEBREW))
+    # "4 can be applied to in total: 1 ... and 3 ..."
+    assert "4" in html and "\u05d4\u05e9\u05de\u05d8\u05d4" in html   # השמטה = omission
+
+
+def test_the_rtl_page_tells_the_chart_to_flip():
+    data = payload(site.render_html(counts=counts(), histogram=[], companies=COMPANIES,
+                                    eligible=ELIGIBLE, series=SERIES, generated_at=NOW,
+                                    lang=site.HEBREW))
+    assert data["bars"]["rtl"] is True
+    assert payload(site.render_html(counts=counts(), histogram=[], companies=COMPANIES,
+                                    eligible=ELIGIBLE, series=SERIES,
+                                    generated_at=NOW))["bars"]["rtl"] is False
+
+
+def test_every_string_key_exists_in_both_languages():
+    # A missing key is a KeyError at publish time, in whichever language was
+    # edited second.
+    assert set(site.ENGLISH.strings) == set(site.HEBREW.strings)
+    assert set(site.ENGLISH.buckets) == set(site.HEBREW.buckets)
+    assert set(site.ENGLISH.buckets) == set(site.BUCKET_ORDER)
+
+
+def test_role_rows_carry_dir_auto_so_latin_titles_survive_rtl():
+    html = site.render_html(counts=counts(), histogram=[], companies=COMPANIES,
+                            eligible=ELIGIBLE, series=SERIES, generated_at=NOW,
+                            lang=site.HEBREW)
+    assert '<li dir="auto">' in html
+
+
+def test_the_hero_caption_stays_a_noun_phrase_in_both_languages():
+    """Pins the shape, because grammar cannot be asserted directly.
+
+    The hero number is 0 some weeks and 4 others. Both languages inflect with
+    it — English "1 ... state", Hebrew "1 ... \u05de\u05e6\u05d9\u05d9\u05e0\u05d5\u05ea" \u2014 so each caption is a
+    noun phrase whose relative clause agrees with "roles", never with the
+    count. A future edit that turns it back into a sentence breaks this.
+    """
+    for lang in site.LANGUAGES:
+        caption = lang.strings["hero_caption"]
+        assert caption.startswith("\u2014 "), lang.code
+        for count in (0, 1, 5, 137):
+            assert "{il_eng}" in caption
+            caption.format(il_eng=count)      # must not raise

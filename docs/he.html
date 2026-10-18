@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מדד גיוס הג'וניורים — ישראל</title>
+<meta name="description" content="עד כמה שוק ההייטק הישראלי פתוח לבוגר מדעי המחשב ללא ניסיון מקצועי. נמדד מלוחות המשרות הפומביים של החברות עצמן.">
+<link rel="alternate" hreflang="en" href="index.html">
+<link rel="alternate" hreflang="he" href="he.html">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+<style>
+:root {
+  --bg:#fbfaf8; --fg:#1b1a18; --muted:#6b6862; --rule:#e3dfd8;
+  --accent:#b4332b; --card:#fff;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#17161a; --fg:#ece9e4; --muted:#a39e96; --rule:#322f36;
+           --accent:#ff7a6b; --card:#1f1e23; }
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--bg); color:var(--fg);
+  font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  -webkit-text-size-adjust:100%;
+}
+.wrap { max-width:860px; margin:0 auto; padding:48px 16px 72px; }
+h1 { font-size:1.55rem; line-height:1.25; margin:0 0 .4em; letter-spacing:-.01em; }
+h2 { font-size:1.05rem; margin:2.6em 0 .7em; letter-spacing:.02em;
+      text-transform:uppercase; color:var(--muted); font-weight:600; }
+p { margin:0 0 1em; max-width:62ch; }
+a { color:var(--accent); }
+.lede { color:var(--muted); }
+.langs { float:inline-end; font-size:.9rem; }
+.hero { border:1px solid var(--rule); background:var(--card); border-radius:10px;
+        padding:28px 24px; margin:28px 0; }
+.hero-n { font-size:clamp(3.6rem,17vw,6rem); line-height:.9; font-weight:700;
+          letter-spacing:-.04em; color:var(--accent); }
+.hero-c { font-size:1.08rem; margin:.5em 0 0; max-width:48ch; }
+.hero-sub { margin:1.1em 0 0; padding-top:1.1em; border-top:1px solid var(--rule);
+            color:var(--muted); font-size:.95rem; max-width:52ch; }
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+         gap:1px; background:var(--rule); border:1px solid var(--rule);
+         border-radius:10px; overflow:hidden; }
+.stat { background:var(--card); padding:16px 18px; }
+.stat-n { font-size:1.65rem; font-weight:650; letter-spacing:-.02em; }
+.stat-l { color:var(--muted); font-size:.82rem; line-height:1.4; }
+figure { margin:0; }
+.chart { position:relative; height:300px; }
+table { width:100%; border-collapse:collapse; font-size:.92rem; }
+.scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+/* Logical properties, so the table flips with the document instead of
+   needing a second set of rules for Hebrew. */
+th,td { text-align:start; padding:9px 12px; border-bottom:1px solid var(--rule);
+        white-space:nowrap; }
+th { color:var(--muted); font-weight:600; font-size:.78rem;
+      text-transform:uppercase; letter-spacing:.04em; }
+td.n, th.n { text-align:end; font-variant-numeric:tabular-nums; }
+td.zero { color:var(--muted); }
+.roles { list-style:none; padding:0; margin:0; }
+.roles li { padding:11px 0; border-bottom:1px solid var(--rule); }
+.loc { color:var(--muted); font-size:.85rem; display:block; }
+.none { font-size:1.05rem; }
+footer { margin-top:56px; padding-top:24px; border-top:1px solid var(--rule);
+         color:var(--muted); font-size:.85rem; }
+footer p { max-width:70ch; }
+code { font-size:.85em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="langs"><a href="index.html" lang="en"
+   hreflang="en">English</a></p>
+
+<h1>עד כמה ההייטק הישראלי פתוח לבוגר ללא ניסיון?</h1>
+<p class="lede">נמדד מלוחות המשרות הפומביים של 24 חברות, לא מדעות. מתעדכן אוטומטית; המתודולוגיה מפורסמת.</p>
+
+<div class="hero">
+  <div class="hero-n">1</div>
+  <p class="hero-c">— מספר משרות ההנדסה בישראל, מתוך <strong>137</strong> פתוחות, שמציינות דרישת ניסיון שבוגר יכול לעמוד בה.</p>
+  <p class="hero-sub">ל-4 אפשר להגיש בסך הכול: 1 בזכות הזמנה מפורשת, ו-3 רק משום היעדר דרישה כלשהי. רוב הדלת הפתוחה היא השמטה ולא הזמנה.</p>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-n">228</div><div class="stat-l">משרות פתוחות בישראל</div></div>
+  <div class="stat"><div class="stat-n">137</div><div class="stat-l">מתוכן, הנדסה</div></div>
+  <div class="stat"><div class="stat-n">123</div><div class="stat-l">דורשות 3+ שנים</div></div>
+  <div class="stat"><div class="stat-n">51</div><div class="stat-l">דורשות תואר</div></div>
+  <div class="stat"><div class="stat-n">1</div><div class="stat-l">עם תואר ג'וניור, בכל תחום</div></div>
+</div>
+
+<h2>רף הניסיון</h2>
+<p>כל דרישה שצוינה, נקראת כרף הגבוה ביותר שעל מועמד לעמוד בו. טווח מציין את רצפתו: “4–8 שנים” נספר כארבע. משרות שאינן מזכירות ניסיון נשמרות בנפרד ממשרות שאינן דורשות אותו.</p>
+<figure><div class="chart"><canvas id="bars"></canvas></div></figure>
+
+<h2>היכן בוגר יכול להגיש</h2>
+<ul class="roles"><li dir="auto"><a href="https://www.catonetworks.com/careers/careers-post/4839355101?gh_jid=4839355101" rel="nofollow noopener" target="_blank">MDR Security Analyst (Threat Hunting) — Cato Networks</a> <span class="loc">Tel Aviv District, Israel</span></li><li dir="auto"><a href="https://www.catonetworks.com/careers/careers-post/4648864101?gh_jid=4648864101" rel="nofollow noopener" target="_blank">SW Engineer - Enterprise Browser team — Cato Networks</a> <span class="loc">Tel Aviv District, Israel</span></li><li dir="auto"><a href="https://www.comeet.com/jobs/pentera/C5.00D/ai-security-researcher/20.376" rel="nofollow noopener" target="_blank">AI Security Researcher — Pentera</a> <span class="loc">Israel</span></li><li dir="auto"><a href="https://job-boards.greenhouse.io/similarweb/jobs/8284137" rel="nofollow noopener" target="_blank">Data Analyst — Similarweb</a> <span class="loc">Tel Aviv-Yafo</span></li></ul>
+
+<h2>לפי חברה</h2>
+<div class="scroll"><table>
+<thead><tr><th>חברה</th><th class="n">הנדסה בישראל</th>
+<th class="n">3+ שנים</th><th class="n">5+ שנים</th>
+<th class="n">פתוח לבוגר</th></tr></thead>
+<tbody>
+<tr><td>Cato Networks</td><td class="n">27</td><td class="n">23</td><td class="n">14</td><td class="n">2</td></tr>
+<tr><td>Similarweb</td><td class="n">19</td><td class="n">17</td><td class="n">10</td><td class="n">1</td></tr>
+<tr><td>NICE</td><td class="n">13</td><td class="n">13</td><td class="n">13</td><td class="n zero">0</td></tr>
+<tr><td>Taboola</td><td class="n">12</td><td class="n">12</td><td class="n">5</td><td class="n zero">0</td></tr>
+<tr><td>AppsFlyer</td><td class="n">10</td><td class="n">9</td><td class="n">7</td><td class="n zero">0</td></tr>
+<tr><td>Island</td><td class="n">10</td><td class="n">6</td><td class="n">4</td><td class="n zero">0</td></tr>
+<tr><td>JFrog</td><td class="n">9</td><td class="n">8</td><td class="n">5</td><td class="n zero">0</td></tr>
+<tr><td>Via</td><td class="n">9</td><td class="n">9</td><td class="n">7</td><td class="n zero">0</td></tr>
+<tr><td>Pentera</td><td class="n">8</td><td class="n">6</td><td class="n">2</td><td class="n">1</td></tr>
+<tr><td>Melio</td><td class="n">5</td><td class="n">5</td><td class="n">4</td><td class="n zero">0</td></tr>
+<tr><td>Gloat</td><td class="n">4</td><td class="n">4</td><td class="n">4</td><td class="n zero">0</td></tr>
+<tr><td>Riskified</td><td class="n">4</td><td class="n">4</td><td class="n">1</td><td class="n zero">0</td></tr>
+<tr><td>Cycode</td><td class="n">2</td><td class="n">2</td><td class="n">1</td><td class="n zero">0</td></tr>
+<tr><td>Orca Security</td><td class="n">2</td><td class="n">2</td><td class="n">2</td><td class="n zero">0</td></tr>
+<tr><td>Yotpo</td><td class="n">2</td><td class="n">2</td><td class="n">2</td><td class="n zero">0</td></tr>
+<tr><td>Augury</td><td class="n">1</td><td class="n">1</td><td class="n">0</td><td class="n zero">0</td></tr>
+</tbody></table></div>
+
+<h2>לאורך זמן</h2>
+<figure><div class="chart"><canvas id="trend"></canvas></div></figure>
+
+<footer>
+<p><strong>מתודולוגיה.</strong> מה נחשב ישראל, מה נחשב הנדסה ומהי דרישת ניסיון — הכול כתוב ב-<a href="https://github.com/adam4ever0100/junior-il/blob/main/METHOD.md">METHOD.md</a>, יחד עם מגבלות המדגם: 24 לוחות משרות ב-Greenhouse וב-Comeet בלבד, כך שמעסיקים ב-Workday, חברות השמה ומשרות שמתפרסמות רק בלינקדאין אינן נכללות. תיקונים שווים לי יותר מהסכמה — <a href="https://github.com/adam4ever0100/junior-il/issues">פתחו issue</a>.</p>
+<p>סריקה <strong>מלאה</strong> (24/24 לוחות הגיבו, 0 הוצאו משימוש) · מנתח <code>2026.10.18-1</code> · נוצר 2026-10-18 19:41 UTC · <a href="data/latest.json">latest.json</a> · <a href="https://github.com/adam4ever0100/junior-il">קוד המקור</a></p>
+<p>נבנה על ידי אדם אבו סעד — תואר ראשון במדעי המחשב, המכללה האקדמית להנדסה ע״ש סמי שמעון, סיום יוני 2026. התחלתי למדוד את השוק הזה כי אני בתוכו, והנתונים שרציתי לא היו קיימים. <a href="mailto:adamabusaad@gmail.com">adamabusaad@gmail.com</a></p>
+</footer>
+</div>
+
+<script id="payload" type="application/json">{"bars": {"labels": ["0\u20131 \u05e9\u05e0\u05d9\u05dd", "\u05e9\u05e0\u05ea\u05d9\u05d9\u05dd", "3\u20134 \u05e9\u05e0\u05d9\u05dd", "5+ \u05e9\u05e0\u05d9\u05dd", "\u201c\u05db\u05de\u05d4 \u05e9\u05e0\u05d9\u05dd\u201d", "\u05dc\u05d0 \u05e6\u05d5\u05d9\u05df"], "values": [1, 3, 42, 81, 1, 9], "rtl": true, "roles": "\u05de\u05e9\u05e8\u05d5\u05ea"}, "trend": [{"date": "2026-10-18", "pct": 2.44, "eligible": 3, "total": 123}, {"date": "2026-10-18", "pct": 2.92, "eligible": 4, "total": 137}]}</script>
+<script>
+window.addEventListener('load', function () {
+  if (typeof Chart === 'undefined') return;
+  var data = JSON.parse(document.getElementById('payload').textContent);
+  var css = getComputedStyle(document.documentElement);
+  var accent = css.getPropertyValue('--accent').trim();
+  var muted = css.getPropertyValue('--muted').trim();
+  var rule = css.getPropertyValue('--rule').trim();
+  Chart.defaults.color = muted;
+  Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+  // In an RTL document the value axis belongs on the right, and the
+  // categories read right to left.
+  var axis = data.bars.rtl ? 'right' : 'left';
+
+  new Chart(document.getElementById('bars'), {
+    type: 'bar',
+    data: { labels: data.bars.labels,
+             datasets: [{ data: data.bars.values, backgroundColor: accent,
+                          borderRadius: 3 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { rtl: data.bars.rtl, callbacks: { label: function (c) {
+          return c.parsed.y + ' ' + data.bars.roles; } } } },
+      scales: { x: { reverse: data.bars.rtl, grid: { display: false } },
+                 y: { position: axis, beginAtZero: true, grid: { color: rule },
+                       ticks: { precision: 0 } } } }
+  });
+
+  var trendCanvas = document.getElementById('trend');
+  if (trendCanvas && data.trend.length > 1) {
+    new Chart(trendCanvas, {
+      type: 'line',
+      data: { labels: data.trend.map(function (p) { return p.date; }),
+               datasets: [{ data: data.trend.map(function (p) { return p.pct; }),
+                            borderColor: accent, backgroundColor: accent,
+                            tension: .2, pointRadius: 3 }] },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false },
+          tooltip: { rtl: data.bars.rtl, callbacks: { label: function (c) {
+            var p = data.trend[c.dataIndex];
+            return p.eligible + ' / ' + p.total + ' (' + p.pct + '%)'; } } } },
+        scales: { x: { grid: { display: false } },
+                   y: { position: axis, beginAtZero: true, grid: { color: rule },
+                         ticks: { callback: function (v) { return v + '%'; } } } } }
+    });
+  }
+});
+</script>
+</body>
+</html>

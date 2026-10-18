@@ -1,6 +1,6 @@
 # junior-il
 
-### → **[adam4ever0100.github.io/junior-il](https://adam4ever0100.github.io/junior-il/)**
+### → **[adam4ever0100.github.io/junior-il](https://adam4ever0100.github.io/junior-il/)**  ·  **[עברית](https://adam4ever0100.github.io/junior-il/he.html)**
 
 **How much of the Israeli tech market is actually open to a graduate with no
 professional experience?**

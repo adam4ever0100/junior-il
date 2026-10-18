@@ -10,6 +10,7 @@ Nothing here decides anything. Every figure arrives already computed from
 `index.py`, so the page cannot disagree with `junior-il index`.
 """
 import json
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
@@ -23,14 +24,148 @@ CONTACT = "adamabusaad@gmail.com"
 CHART_JS = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
 
 BUCKET_ORDER = ("0-1", "2", "3-4", "5+", "unquantified", "unstated")
-BUCKET_LABELS = {
-    "0-1": "0–1 years",
-    "2": "2 years",
-    "3-4": "3–4 years",
-    "5+": "5+ years",
-    "unquantified": "“several years”",
-    "unstated": "not stated",
-}
+
+
+@dataclass(frozen=True)
+class Language:
+    """One rendered page.
+
+    Two documents rather than one page with a JavaScript switch: Hebrew needs
+    `lang="he" dir="rtl"` on the document itself, the page then works with no
+    JavaScript at all, and a Hebrew URL can be sent to a Hebrew-reading
+    recruiter directly instead of asking them to click a toggle.
+    """
+    code: str
+    direction: str
+    filename: str
+    other_name: str     # link text pointing at the other language
+    other_file: str
+    buckets: dict[str, str]
+    strings: dict[str, str]
+
+
+ENGLISH = Language(
+    code="en", direction="ltr", filename="index.html",
+    other_name="\u05e2\u05d1\u05e8\u05d9\u05ea", other_file="he.html",
+    buckets={
+        "0-1": "0\u20131 years", "2": "2 years", "3-4": "3\u20134 years",
+        "5+": "5+ years", "unquantified": "\u201cseveral years\u201d",
+        "unstated": "not stated",
+    },
+    strings={
+        "title": "Junior Hiring Index \u2014 Israel",
+        "description": "How much of the Israeli tech market is open to a computer "
+                       "science graduate with no professional experience. Measured "
+                       "from companies' own public job boards, with the method published.",
+        "h1": "How open is Israeli tech to a graduate with no experience?",
+        "lede": "Measured from {boards} companies' own public job boards, not from "
+                "opinion. Updated automatically; the method is published.",
+        # A noun phrase, not a sentence with a verb: the hero number is 0 one
+        # week and 4 the next, and "1 ... state an experience requirement" is
+        # wrong English. The relative clause agrees with "roles" instead, so
+        # the wording survives any value.
+        "hero_caption": "\u2014 the number of Israel-based engineering roles, out of "
+                        "<strong>{il_eng}</strong> open, that state an experience "
+                        "requirement a graduate could meet.",
+        "sub_none": "No open engineering role in the sample can be applied to by a "
+                    "graduate at all.",
+        "sub_no_invite": "{eligible} can be applied to in total \u2014 but only because "
+                         "they state no experience requirement at all, not because they "
+                         "invite someone starting out. The door is not ajar; it is "
+                         "unlabelled.",
+        "sub_all_invite": "{eligible} can be applied to in total, and each one says so "
+                          "explicitly.",
+        "sub_mixed": "{eligible} can be applied to in total: {invited} that invites a "
+                     "graduate outright, and {silent} that simply state no requirement "
+                     "at all. Most of the open door is an omission rather than an "
+                     "invitation.",
+        "stat_israel": "open roles located in Israel",
+        "stat_eng": "of those, engineering",
+        "stat_3plus": "demand 3+ years",
+        "stat_degree": "require a degree",
+        "stat_junior_titled": "junior-titled, any field",
+        "h_bar": "The experience bar",
+        "p_bar": "Every stated requirement, read as the steepest figure a candidate "
+                 "must clear. A range states its floor: \u201c4\u20138 years\u201d counts as "
+                 "four. Postings that never mention experience are kept separate from "
+                 "postings that ask for none.",
+        "h_apply": "Where a graduate can apply",
+        "none_apply": "Not one open engineering role in the sample is open to a "
+                      "graduate with no professional experience.",
+        "h_company": "By company",
+        "th_company": "Company", "th_eng": "IL eng.", "th_3": "3+ yrs",
+        "th_5": "5+ yrs", "th_grad": "Open to a grad",
+        "h_time": "Over time",
+        "first_snapshot": "This is the first snapshot. A single measurement is not a "
+                          "trend, so there is nothing to plot yet \u2014 come back next month.",
+        "method": "<strong>Method.</strong> What counts as Israel, as engineering, and "
+                  "as an experience requirement is written down in "
+                  "<a href=\"{repo}/blob/main/METHOD.md\">METHOD.md</a>, together with the "
+                  "limits of the sample: {boards} company boards on Greenhouse and Comeet "
+                  "only, so Workday employers, agencies and roles posted on LinkedIn alone "
+                  "are absent. Corrections are worth more to me than agreement \u2014 "
+                  "<a href=\"{repo}/issues\">open an issue</a>.",
+        "sweep": "Sweep <strong>{status}</strong> ({ok}/{total} boards answered, "
+                 "{retired} retired) \u00b7 parser <code>{parser}</code> \u00b7 generated "
+                 "{generated} UTC \u00b7 <a href=\"data/latest.json\">latest.json</a> \u00b7 "
+                 "<a href=\"{repo}\">source</a>",
+        "status_complete": "complete", "status_partial": "partial",
+        "bio": "Built by Adam Abu Saad \u2014 B.Sc. Computer Science, Shamoon College of "
+               "Engineering, graduating June 2026. I started measuring this market "
+               "because I am in it, and the data I wanted did not exist.",
+        "roles_tooltip": "roles",
+    },
+)
+
+HEBREW = Language(
+    code="he", direction="rtl", filename="he.html",
+    other_name="English", other_file="index.html",
+    buckets={
+        "0-1": "0\u20131 \u05e9\u05e0\u05d9\u05dd", "2": "\u05e9\u05e0\u05ea\u05d9\u05d9\u05dd",
+        "3-4": "3\u20134 \u05e9\u05e0\u05d9\u05dd", "5+": "5+ \u05e9\u05e0\u05d9\u05dd",
+        "unquantified": "\u201c\u05db\u05de\u05d4 \u05e9\u05e0\u05d9\u05dd\u201d",
+        "unstated": "\u05dc\u05d0 \u05e6\u05d5\u05d9\u05df",
+    },
+    # Hebrew conjugates with the number, and these numbers change on every
+    # run. Each sentence here is phrased to be agreement-free — a count is
+    # followed by a noun phrase, never by a verb that would have to agree
+    # with it — so the page cannot become ungrammatical when the data moves.
+    strings={
+        "title": "\u05de\u05d3\u05d3 \u05d2\u05d9\u05d5\u05e1 \u05d4\u05d2'\u05d5\u05e0\u05d9\u05d5\u05e8\u05d9\u05dd \u2014 \u05d9\u05e9\u05e8\u05d0\u05dc",
+        "description": "\u05e2\u05d3 \u05db\u05de\u05d4 \u05e9\u05d5\u05e7 \u05d4\u05d4\u05d9\u05d9\u05d8\u05e7 \u05d4\u05d9\u05e9\u05e8\u05d0\u05dc\u05d9 \u05e4\u05ea\u05d5\u05d7 \u05dc\u05d1\u05d5\u05d2\u05e8 \u05de\u05d3\u05e2\u05d9 \u05d4\u05de\u05d7\u05e9\u05d1 \u05dc\u05dc\u05d0 \u05e0\u05d9\u05e1\u05d9\u05d5\u05df \u05de\u05e7\u05e6\u05d5\u05e2\u05d9. \u05e0\u05de\u05d3\u05d3 \u05de\u05dc\u05d5\u05d7\u05d5\u05ea \u05d4\u05de\u05e9\u05e8\u05d5\u05ea \u05d4\u05e4\u05d5\u05de\u05d1\u05d9\u05d9\u05dd \u05e9\u05dc \u05d4\u05d7\u05d1\u05e8\u05d5\u05ea \u05e2\u05e6\u05de\u05df.",
+        "h1": "\u05e2\u05d3 \u05db\u05de\u05d4 \u05d4\u05d4\u05d9\u05d9\u05d8\u05e7 \u05d4\u05d9\u05e9\u05e8\u05d0\u05dc\u05d9 \u05e4\u05ea\u05d5\u05d7 \u05dc\u05d1\u05d5\u05d2\u05e8 \u05dc\u05dc\u05d0 \u05e0\u05d9\u05e1\u05d9\u05d5\u05df?",
+        "lede": "\u05e0\u05de\u05d3\u05d3 \u05de\u05dc\u05d5\u05d7\u05d5\u05ea \u05d4\u05de\u05e9\u05e8\u05d5\u05ea \u05d4\u05e4\u05d5\u05de\u05d1\u05d9\u05d9\u05dd \u05e9\u05dc {boards} \u05d7\u05d1\u05e8\u05d5\u05ea, \u05dc\u05d0 \u05de\u05d3\u05e2\u05d5\u05ea. \u05de\u05ea\u05e2\u05d3\u05db\u05df \u05d0\u05d5\u05d8\u05d5\u05de\u05d8\u05d9\u05ea; \u05d4\u05de\u05ea\u05d5\u05d3\u05d5\u05dc\u05d5\u05d2\u05d9\u05d4 \u05de\u05e4\u05d5\u05e8\u05e1\u05de\u05ea.",
+        "hero_caption": "\u2014 מספר משרות ההנדסה בישראל, מתוך "
+                        "<strong>{il_eng}</strong> פתוחות, שמציינות דרישת ניסיון "
+                        "שבוגר יכול לעמוד בה.",
+        "sub_none": "\u05d0\u05e3 \u05de\u05e9\u05e8\u05ea \u05d4\u05e0\u05d3\u05e1\u05d4 \u05e4\u05ea\u05d5\u05d7\u05d4 \u05d1\u05de\u05d3\u05d2\u05dd \u05d0\u05d9\u05e0\u05d4 \u05e4\u05ea\u05d5\u05d7\u05d4 \u05dc\u05d1\u05d5\u05d2\u05e8 \u05dc\u05dc\u05d0 \u05e0\u05d9\u05e1\u05d9\u05d5\u05df \u05db\u05dc\u05dc.",
+        "sub_no_invite": "\u05dc-{eligible} \u05d0\u05e4\u05e9\u05e8 \u05dc\u05d4\u05d2\u05d9\u05e9 \u05d1\u05e1\u05da \u05d4\u05db\u05d5\u05dc \u2014 \u05d0\u05da \u05e8\u05e7 \u05de\u05e9\u05d5\u05dd \u05e9\u05d0\u05d9\u05e0\u05df \u05de\u05e6\u05d9\u05d9\u05e0\u05d5\u05ea \u05d3\u05e8\u05d9\u05e9\u05ea \u05e0\u05d9\u05e1\u05d9\u05d5\u05df \u05db\u05dc\u05dc, \u05dc\u05d0 \u05de\u05e9\u05d5\u05dd \u05e9\u05d4\u05df \u05de\u05d6\u05de\u05d9\u05e0\u05d5\u05ea \u05de\u05d9 \u05e9\u05e8\u05e7 \u05de\u05ea\u05d7\u05d9\u05dc. \u05d4\u05d3\u05dc\u05ea \u05d0\u05d9\u05e0\u05d4 \u05e4\u05ea\u05d5\u05d7\u05d4 \u2014 \u05d4\u05d9\u05d0 \u05e4\u05e9\u05d5\u05d8 \u05dc\u05d0 \u05de\u05e1\u05d5\u05de\u05e0\u05ea.",
+        "sub_all_invite": "\u05dc-{eligible} \u05d0\u05e4\u05e9\u05e8 \u05dc\u05d4\u05d2\u05d9\u05e9 \u05d1\u05e1\u05da \u05d4\u05db\u05d5\u05dc, \u05d5\u05db\u05dc \u05d0\u05d7\u05ea \u05de\u05d4\u05df \u05d0\u05d5\u05de\u05e8\u05ea \u05d6\u05d0\u05ea \u05d1\u05de\u05e4\u05d5\u05e8\u05e9.",
+        "sub_mixed": "\u05dc-{eligible} \u05d0\u05e4\u05e9\u05e8 \u05dc\u05d4\u05d2\u05d9\u05e9 \u05d1\u05e1\u05da \u05d4\u05db\u05d5\u05dc: {invited} \u05d1\u05d6\u05db\u05d5\u05ea \u05d4\u05d6\u05de\u05e0\u05d4 \u05de\u05e4\u05d5\u05e8\u05e9\u05ea, \u05d5-{silent} \u05e8\u05e7 \u05de\u05e9\u05d5\u05dd \u05d4\u05d9\u05e2\u05d3\u05e8 \u05d3\u05e8\u05d9\u05e9\u05d4 \u05db\u05dc\u05e9\u05d4\u05d9. \u05e8\u05d5\u05d1 \u05d4\u05d3\u05dc\u05ea \u05d4\u05e4\u05ea\u05d5\u05d7\u05d4 \u05d4\u05d9\u05d0 \u05d4\u05e9\u05de\u05d8\u05d4 \u05d5\u05dc\u05d0 \u05d4\u05d6\u05de\u05e0\u05d4.",
+        "stat_israel": "\u05de\u05e9\u05e8\u05d5\u05ea \u05e4\u05ea\u05d5\u05d7\u05d5\u05ea \u05d1\u05d9\u05e9\u05e8\u05d0\u05dc",
+        "stat_eng": "\u05de\u05ea\u05d5\u05db\u05df, \u05d4\u05e0\u05d3\u05e1\u05d4",
+        "stat_3plus": "\u05d3\u05d5\u05e8\u05e9\u05d5\u05ea 3+ \u05e9\u05e0\u05d9\u05dd",
+        "stat_degree": "\u05d3\u05d5\u05e8\u05e9\u05d5\u05ea \u05ea\u05d5\u05d0\u05e8",
+        "stat_junior_titled": "\u05e2\u05dd \u05ea\u05d5\u05d0\u05e8 \u05d2'\u05d5\u05e0\u05d9\u05d5\u05e8, \u05d1\u05db\u05dc \u05ea\u05d7\u05d5\u05dd",
+        "h_bar": "\u05e8\u05e3 \u05d4\u05e0\u05d9\u05e1\u05d9\u05d5\u05df",
+        "p_bar": "\u05db\u05dc \u05d3\u05e8\u05d9\u05e9\u05d4 \u05e9\u05e6\u05d5\u05d9\u05e0\u05d4, \u05e0\u05e7\u05e8\u05d0\u05ea \u05db\u05e8\u05e3 \u05d4\u05d2\u05d1\u05d5\u05d4 \u05d1\u05d9\u05d5\u05ea\u05e8 \u05e9\u05e2\u05dc \u05de\u05d5\u05e2\u05de\u05d3 \u05dc\u05e2\u05de\u05d5\u05d3 \u05d1\u05d5. \u05d8\u05d5\u05d5\u05d7 \u05de\u05e6\u05d9\u05d9\u05df \u05d0\u05ea \u05e8\u05e6\u05e4\u05ea\u05d5: \u201c4\u20138 \u05e9\u05e0\u05d9\u05dd\u201d \u05e0\u05e1\u05e4\u05e8 \u05db\u05d0\u05e8\u05d1\u05e2. \u05de\u05e9\u05e8\u05d5\u05ea \u05e9\u05d0\u05d9\u05e0\u05df \u05de\u05d6\u05db\u05d9\u05e8\u05d5\u05ea \u05e0\u05d9\u05e1\u05d9\u05d5\u05df \u05e0\u05e9\u05de\u05e8\u05d5\u05ea \u05d1\u05e0\u05e4\u05e8\u05d3 \u05de\u05de\u05e9\u05e8\u05d5\u05ea \u05e9\u05d0\u05d9\u05e0\u05df \u05d3\u05d5\u05e8\u05e9\u05d5\u05ea \u05d0\u05d5\u05ea\u05d5.",
+        "h_apply": "\u05d4\u05d9\u05db\u05df \u05d1\u05d5\u05d2\u05e8 \u05d9\u05db\u05d5\u05dc \u05dc\u05d4\u05d2\u05d9\u05e9",
+        "none_apply": "\u05d0\u05e3 \u05de\u05e9\u05e8\u05ea \u05d4\u05e0\u05d3\u05e1\u05d4 \u05e4\u05ea\u05d5\u05d7\u05d4 \u05d1\u05de\u05d3\u05d2\u05dd \u05d0\u05d9\u05e0\u05d4 \u05e4\u05ea\u05d5\u05d7\u05d4 \u05dc\u05d1\u05d5\u05d2\u05e8 \u05dc\u05dc\u05d0 \u05e0\u05d9\u05e1\u05d9\u05d5\u05df \u05de\u05e7\u05e6\u05d5\u05e2\u05d9.",
+        "h_company": "\u05dc\u05e4\u05d9 \u05d7\u05d1\u05e8\u05d4",
+        "th_company": "\u05d7\u05d1\u05e8\u05d4", "th_eng": "\u05d4\u05e0\u05d3\u05e1\u05d4 \u05d1\u05d9\u05e9\u05e8\u05d0\u05dc",
+        "th_3": "3+ \u05e9\u05e0\u05d9\u05dd", "th_5": "5+ \u05e9\u05e0\u05d9\u05dd",
+        "th_grad": "\u05e4\u05ea\u05d5\u05d7 \u05dc\u05d1\u05d5\u05d2\u05e8",
+        "h_time": "\u05dc\u05d0\u05d5\u05e8\u05da \u05d6\u05de\u05df",
+        "first_snapshot": "\u05d6\u05d5 \u05d4\u05de\u05d3\u05d9\u05d3\u05d4 \u05d4\u05e8\u05d0\u05e9\u05d5\u05e0\u05d4. \u05de\u05d3\u05d9\u05d3\u05d4 \u05d0\u05d7\u05ea \u05d0\u05d9\u05e0\u05d4 \u05de\u05d2\u05de\u05d4, \u05d5\u05dc\u05db\u05df \u05d0\u05d9\u05df \u05e2\u05d3\u05d9\u05d9\u05df \u05de\u05d4 \u05dc\u05e9\u05e8\u05d8\u05d8 \u2014 \u05d7\u05d6\u05e8\u05d5 \u05d1\u05d7\u05d5\u05d3\u05e9 \u05d4\u05d1\u05d0.",
+        "method": "<strong>\u05de\u05ea\u05d5\u05d3\u05d5\u05dc\u05d5\u05d2\u05d9\u05d4.</strong> \u05de\u05d4 \u05e0\u05d7\u05e9\u05d1 \u05d9\u05e9\u05e8\u05d0\u05dc, \u05de\u05d4 \u05e0\u05d7\u05e9\u05d1 \u05d4\u05e0\u05d3\u05e1\u05d4 \u05d5\u05de\u05d4\u05d9 \u05d3\u05e8\u05d9\u05e9\u05ea \u05e0\u05d9\u05e1\u05d9\u05d5\u05df \u2014 \u05d4\u05db\u05d5\u05dc \u05db\u05ea\u05d5\u05d1 \u05d1-<a href=\"{repo}/blob/main/METHOD.md\">METHOD.md</a>, \u05d9\u05d7\u05d3 \u05e2\u05dd \u05de\u05d2\u05d1\u05dc\u05d5\u05ea \u05d4\u05de\u05d3\u05d2\u05dd: {boards} \u05dc\u05d5\u05d7\u05d5\u05ea \u05de\u05e9\u05e8\u05d5\u05ea \u05d1-Greenhouse \u05d5\u05d1-Comeet \u05d1\u05dc\u05d1\u05d3, \u05db\u05da \u05e9\u05de\u05e2\u05e1\u05d9\u05e7\u05d9\u05dd \u05d1-Workday, \u05d7\u05d1\u05e8\u05d5\u05ea \u05d4\u05e9\u05de\u05d4 \u05d5\u05de\u05e9\u05e8\u05d5\u05ea \u05e9\u05de\u05ea\u05e4\u05e8\u05e1\u05de\u05d5\u05ea \u05e8\u05e7 \u05d1\u05dc\u05d9\u05e0\u05e7\u05d3\u05d0\u05d9\u05df \u05d0\u05d9\u05e0\u05df \u05e0\u05db\u05dc\u05dc\u05d5\u05ea. \u05ea\u05d9\u05e7\u05d5\u05e0\u05d9\u05dd \u05e9\u05d5\u05d5\u05d9\u05dd \u05dc\u05d9 \u05d9\u05d5\u05ea\u05e8 \u05de\u05d4\u05e1\u05db\u05de\u05d4 \u2014 <a href=\"{repo}/issues\">\u05e4\u05ea\u05d7\u05d5 issue</a>.",
+        "sweep": "\u05e1\u05e8\u05d9\u05e7\u05d4 <strong>{status}</strong> ({ok}/{total} \u05dc\u05d5\u05d7\u05d5\u05ea \u05d4\u05d2\u05d9\u05d1\u05d5, {retired} \u05d4\u05d5\u05e6\u05d0\u05d5 \u05de\u05e9\u05d9\u05de\u05d5\u05e9) \u00b7 \u05de\u05e0\u05ea\u05d7 <code>{parser}</code> \u00b7 \u05e0\u05d5\u05e6\u05e8 {generated} UTC \u00b7 <a href=\"data/latest.json\">latest.json</a> \u00b7 <a href=\"{repo}\">\u05e7\u05d5\u05d3 \u05d4\u05de\u05e7\u05d5\u05e8</a>",
+        "status_complete": "\u05de\u05dc\u05d0\u05d4", "status_partial": "\u05d7\u05dc\u05e7\u05d9\u05ea",
+        "bio": "\u05e0\u05d1\u05e0\u05d4 \u05e2\u05dc \u05d9\u05d3\u05d9 \u05d0\u05d3\u05dd \u05d0\u05d1\u05d5 \u05e1\u05e2\u05d3 \u2014 \u05ea\u05d5\u05d0\u05e8 \u05e8\u05d0\u05e9\u05d5\u05df \u05d1\u05de\u05d3\u05e2\u05d9 \u05d4\u05de\u05d7\u05e9\u05d1, \u05d4\u05de\u05db\u05dc\u05dc\u05d4 \u05d4\u05d0\u05e7\u05d3\u05de\u05d9\u05ea \u05dc\u05d4\u05e0\u05d3\u05e1\u05d4 \u05e2\u05f4\u05e9 \u05e1\u05de\u05d9 \u05e9\u05de\u05e2\u05d5\u05df, \u05e1\u05d9\u05d5\u05dd \u05d9\u05d5\u05e0\u05d9 2026. \u05d4\u05ea\u05d7\u05dc\u05ea\u05d9 \u05dc\u05de\u05d3\u05d5\u05d3 \u05d0\u05ea \u05d4\u05e9\u05d5\u05e7 \u05d4\u05d6\u05d4 \u05db\u05d9 \u05d0\u05e0\u05d9 \u05d1\u05ea\u05d5\u05db\u05d5, \u05d5\u05d4\u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05e9\u05e8\u05e6\u05d9\u05ea\u05d9 \u05dc\u05d0 \u05d4\u05d9\u05d5 \u05e7\u05d9\u05d9\u05de\u05d9\u05dd.",
+        "roles_tooltip": "\u05de\u05e9\u05e8\u05d5\u05ea",
+    },
+)
+
+LANGUAGES = (ENGLISH, HEBREW)
 
 
 def _json_for_script(payload: Any) -> str:
@@ -69,19 +204,40 @@ def _company_rows(companies: list[dict]) -> str:
     return "\n".join(rows)
 
 
-def _eligible_list(roles: list[dict]) -> str:
+def _eligible_list(roles: list[dict], lang: Language) -> str:
     if not roles:
-        return ('<p class="none">Not one open engineering role in the sample is '
-                "open to a graduate with no professional experience.</p>")
+        return f'<p class="none">{lang.strings["none_apply"]}</p>'
     items = []
     for role in roles:
-        label = f'{escape(role["title"])} — {escape(role["company"])}'
+        label = f'{escape(role["title"])} \u2014 {escape(role["company"])}'
         location = escape(role["location_raw"] or "")
         url = role["url"] or ""
         link = (f'<a href="{escape(url, quote=True)}" rel="nofollow noopener" '
                 f'target="_blank">{label}</a>') if url else label
-        items.append(f"<li>{link} <span class=\"loc\">{location}</span></li>")
+        # Role titles and locations stay in the language the employer wrote
+        # them in; dir="auto" lets each line lay itself out correctly inside
+        # an RTL page rather than forcing Latin text to read right-to-left.
+        items.append(f'<li dir="auto">{link} <span class="loc">{location}</span></li>')
     return f'<ul class="roles">{"".join(items)}</ul>'
+
+
+def _hero_sub(lang: Language, eligible: int, invited: int) -> str:
+    """The claim about *why* those roles are open, derived from the numbers.
+
+    Hardcoding it once produced a sentence that was true in the morning and
+    false by the evening, so each case is a separate template and the right
+    one is chosen from the data.
+    """
+    silent = eligible - invited
+    if eligible == 0:
+        key = "sub_none"
+    elif invited == 0:
+        key = "sub_no_invite"
+    elif silent == 0:
+        key = "sub_all_invite"
+    else:
+        key = "sub_mixed"
+    return lang.strings[key].format(eligible=eligible, invited=invited, silent=silent)
 
 
 def render_html(
@@ -91,15 +247,19 @@ def render_html(
     eligible: list[dict],
     series: list[dict],
     generated_at: datetime,
+    lang: Language = ENGLISH,
 ) -> str:
+    text = lang.strings
     buckets = {row["bucket"]: row["roles"] for row in histogram}
     # Every bucket is drawn, including the empty ones. A GROUP BY omits a
     # bucket with no rows, which silently deleted the "0-1 years" bar — the
     # one fact the whole page is about. An absence has to be visible as a
     # flat zero, not as a missing column nobody notices.
     chart_data = {
-        "labels": [BUCKET_LABELS[b] for b in BUCKET_ORDER],
+        "labels": [lang.buckets[b] for b in BUCKET_ORDER],
         "values": [buckets.get(b, 0) for b in BUCKET_ORDER],
+        "rtl": lang.direction == "rtl",
+        "roles": text["roles_tooltip"],
     }
     # Oldest first, so the line reads left to right.
     trend = [
@@ -113,39 +273,24 @@ def render_html(
     il_eng = counts["open_israel_eng"]
     invited = counts["explicit_entry"]
     eligible_n = counts["junior_eligible"]
-    silent = eligible_n - invited
+    status = text["status_complete"] if counts["status"] == "complete" \
+        else text["status_partial"]
+    other_code = "he" if lang.code == "en" else "en"
 
-    # The sub-heading is generated, not written, because it makes a claim about
-    # *why* those roles are open. An earlier version hardcoded "only because
-    # they state no requirement at all" — true when nothing invited a graduate,
-    # and false the moment one did. Prose that asserts a number has to be
-    # derived from that number.
-    if eligible_n == 0:
-        hero_sub = ("No open engineering role in the sample can be applied to "
-                    "by a graduate at all.")
-    elif invited == 0:
-        hero_sub = (f"{eligible_n} can be applied to in total — but only because "
-                    "they state no experience requirement at all, not because "
-                    "they invite someone starting out. The door is not ajar; it "
-                    "is unlabelled.")
-    elif silent == 0:
-        hero_sub = (f"{eligible_n} can be applied to in total, and each one says "
-                    "so explicitly.")
-    else:
-        hero_sub = (f"{eligible_n} can be applied to in total: {invited} that "
-                    f"invites a graduate outright, and {silent} that simply "
-                    "state no requirement at all. Most of the open door is an "
-                    "omission rather than an invitation.")
+    trend_block = (
+        '<figure><div class="chart"><canvas id="trend"></canvas></div></figure>'
+        if len(trend) > 1 else f'<p>{text["first_snapshot"]}</p>'
+    )
 
     return f"""<!doctype html>
-<html lang="en">
+<html lang="{lang.code}" dir="{lang.direction}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Junior Hiring Index — Israel</title>
-<meta name="description" content="How much of the Israeli tech market is open to a
- computer science graduate with no professional experience. Measured from companies'
- own public job boards, with the method published.">
+<title>{text["title"]}</title>
+<meta name="description" content="{escape(text["description"], quote=True)}">
+<link rel="alternate" hreflang="{LANGUAGES[0].code}" href="{LANGUAGES[0].filename}">
+<link rel="alternate" hreflang="{LANGUAGES[1].code}" href="{LANGUAGES[1].filename}">
 <script src="{CHART_JS}" defer></script>
 <style>
 :root {{
@@ -169,6 +314,7 @@ h2 {{ font-size:1.05rem; margin:2.6em 0 .7em; letter-spacing:.02em;
 p {{ margin:0 0 1em; max-width:62ch; }}
 a {{ color:var(--accent); }}
 .lede {{ color:var(--muted); }}
+.langs {{ float:inline-end; font-size:.9rem; }}
 .hero {{ border:1px solid var(--rule); background:var(--card); border-radius:10px;
         padding:28px 24px; margin:28px 0; }}
 .hero-n {{ font-size:clamp(3.6rem,17vw,6rem); line-height:.9; font-weight:700;
@@ -186,11 +332,13 @@ figure {{ margin:0; }}
 .chart {{ position:relative; height:300px; }}
 table {{ width:100%; border-collapse:collapse; font-size:.92rem; }}
 .scroll {{ overflow-x:auto; -webkit-overflow-scrolling:touch; }}
-th,td {{ text-align:left; padding:9px 12px; border-bottom:1px solid var(--rule);
+/* Logical properties, so the table flips with the document instead of
+   needing a second set of rules for Hebrew. */
+th,td {{ text-align:start; padding:9px 12px; border-bottom:1px solid var(--rule);
         white-space:nowrap; }}
 th {{ color:var(--muted); font-weight:600; font-size:.78rem;
       text-transform:uppercase; letter-spacing:.04em; }}
-td.n {{ text-align:right; font-variant-numeric:tabular-nums; }}
+td.n, th.n {{ text-align:end; font-variant-numeric:tabular-nums; }}
 td.zero {{ color:var(--muted); }}
 .roles {{ list-style:none; padding:0; margin:0; }}
 .roles li {{ padding:11px 0; border-bottom:1px solid var(--rule); }}
@@ -205,67 +353,52 @@ code {{ font-size:.85em; }}
 <body>
 <div class="wrap">
 
-<h1>How open is Israeli tech to a graduate with no experience?</h1>
-<p class="lede">Measured from {counts['boards_total']} companies' own public job
-boards, not from opinion. Updated automatically; the method is published.</p>
+<p class="langs"><a href="{lang.other_file}" lang="{other_code}"
+   hreflang="{other_code}">{lang.other_name}</a></p>
+
+<h1>{text["h1"]}</h1>
+<p class="lede">{text["lede"].format(boards=counts["boards_total"])}</p>
 
 <div class="hero">
   <div class="hero-n">{invited}</div>
-  <p class="hero-c">of <strong>{il_eng}</strong> open engineering roles located in
-  Israel state an experience requirement a graduate could meet.</p>
-  <p class="hero-sub">{hero_sub}</p>
+  <p class="hero-c">{text["hero_caption"].format(il_eng=il_eng)}</p>
+  <p class="hero-sub">{_hero_sub(lang, eligible_n, invited)}</p>
 </div>
 
 <div class="stats">
-  {_stat(counts['open_israel'], 'open roles located in Israel')}
-  {_stat(il_eng, 'of those, engineering')}
-  {_stat(counts['bar_3plus'], 'demand 3+ years')}
-  {_stat(counts['degree_required'], 'require a degree')}
-  {_stat(counts['junior_titled'], 'junior-titled, any field')}
+  {_stat(counts['open_israel'], text["stat_israel"])}
+  {_stat(il_eng, text["stat_eng"])}
+  {_stat(counts['bar_3plus'], text["stat_3plus"])}
+  {_stat(counts['degree_required'], text["stat_degree"])}
+  {_stat(counts['junior_titled'], text["stat_junior_titled"])}
 </div>
 
-<h2>The experience bar</h2>
-<p>Every stated requirement, read as the steepest figure a candidate must clear.
-A range states its floor: “4–8 years” counts as four. Postings that never
-mention experience are kept separate from postings that ask for none.</p>
+<h2>{text["h_bar"]}</h2>
+<p>{text["p_bar"]}</p>
 <figure><div class="chart"><canvas id="bars"></canvas></div></figure>
 
-<h2>Where a graduate can apply</h2>
-{_eligible_list(eligible)}
+<h2>{text["h_apply"]}</h2>
+{_eligible_list(eligible, lang)}
 
-<h2>By company</h2>
+<h2>{text["h_company"]}</h2>
 <div class="scroll"><table>
-<thead><tr><th>Company</th><th class="n">IL eng.</th><th class="n">3+ yrs</th>
-<th class="n">5+ yrs</th><th class="n">Open to a grad</th></tr></thead>
+<thead><tr><th>{text["th_company"]}</th><th class="n">{text["th_eng"]}</th>
+<th class="n">{text["th_3"]}</th><th class="n">{text["th_5"]}</th>
+<th class="n">{text["th_grad"]}</th></tr></thead>
 <tbody>
 {_company_rows(companies)}
 </tbody></table></div>
 
-<h2>Over time</h2>
-{'<figure><div class="chart"><canvas id="trend"></canvas></div></figure>'
- if len(trend) > 1 else
- '<p>This is the first snapshot. A single measurement is not a trend, so there '
- 'is nothing to plot yet — come back next month.</p>'}
+<h2>{text["h_time"]}</h2>
+{trend_block}
 
 <footer>
-<p><strong>Method.</strong> What counts as Israel, as engineering, and as an
-experience requirement is written down in
-<a href="{REPO}/blob/main/METHOD.md">METHOD.md</a>, together with the limits of
-the sample: {counts['boards_total']} company boards on Greenhouse and Comeet
-only, so Workday employers, agencies and roles posted on LinkedIn alone are
-absent. Corrections are worth more to me than agreement —
-<a href="{REPO}/issues">open an issue</a>.</p>
-<p>Sweep <strong>{escape(counts['status'])}</strong>
-({counts['boards_ok']}/{counts['boards_total']} boards answered,
-{counts['boards_retired']} retired) · parser
-<code>{escape(counts['parser_version'])}</code> · generated
-{generated_at:%Y-%m-%d %H:%M} UTC ·
-<a href="data/latest.json">latest.json</a> ·
-<a href="{REPO}">source</a></p>
-<p>Built by Adam Abu Saad — B.Sc. Computer Science, Shamoon College of
-Engineering, graduating June 2026. I started measuring this market because I am
-in it, and the data I wanted did not exist.
-<a href="mailto:{CONTACT}">{CONTACT}</a></p>
+<p>{text["method"].format(repo=REPO, boards=counts["boards_total"])}</p>
+<p>{text["sweep"].format(
+    status=status, ok=counts["boards_ok"], total=counts["boards_total"],
+    retired=counts["boards_retired"], parser=escape(counts["parser_version"]),
+    generated=f"{generated_at:%Y-%m-%d %H:%M}", repo=REPO)}</p>
+<p>{text["bio"]} <a href="mailto:{CONTACT}">{CONTACT}</a></p>
 </footer>
 </div>
 
@@ -281,6 +414,9 @@ window.addEventListener('load', function () {{
   var rule = css.getPropertyValue('--rule').trim();
   Chart.defaults.color = muted;
   Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+  // In an RTL document the value axis belongs on the right, and the
+  // categories read right to left.
+  var axis = data.bars.rtl ? 'right' : 'left';
 
   new Chart(document.getElementById('bars'), {{
     type: 'bar',
@@ -289,10 +425,10 @@ window.addEventListener('load', function () {{
                           borderRadius: 3 }}] }},
     options: {{ responsive: true, maintainAspectRatio: false,
       plugins: {{ legend: {{ display: false }},
-        tooltip: {{ callbacks: {{ label: function (c) {{
-          return c.parsed.y + ' roles'; }} }} }} }},
-      scales: {{ x: {{ grid: {{ display: false }} }},
-                 y: {{ beginAtZero: true, grid: {{ color: rule }},
+        tooltip: {{ rtl: data.bars.rtl, callbacks: {{ label: function (c) {{
+          return c.parsed.y + ' ' + data.bars.roles; }} }} }} }},
+      scales: {{ x: {{ reverse: data.bars.rtl, grid: {{ display: false }} }},
+                 y: {{ position: axis, beginAtZero: true, grid: {{ color: rule }},
                        ticks: {{ precision: 0 }} }} }} }}
   }});
 
@@ -306,11 +442,11 @@ window.addEventListener('load', function () {{
                             tension: .2, pointRadius: 3 }}] }},
       options: {{ responsive: true, maintainAspectRatio: false,
         plugins: {{ legend: {{ display: false }},
-          tooltip: {{ callbacks: {{ label: function (c) {{
+          tooltip: {{ rtl: data.bars.rtl, callbacks: {{ label: function (c) {{
             var p = data.trend[c.dataIndex];
-            return p.eligible + ' of ' + p.total + ' (' + p.pct + '%)'; }} }} }} }},
+            return p.eligible + ' / ' + p.total + ' (' + p.pct + '%)'; }} }} }} }},
         scales: {{ x: {{ grid: {{ display: false }} }},
-                   y: {{ beginAtZero: true, grid: {{ color: rule }},
+                   y: {{ position: axis, beginAtZero: true, grid: {{ color: rule }},
                          ticks: {{ callback: function (v) {{ return v + '%'; }} }} }} }} }}
     }});
   }}
@@ -352,10 +488,13 @@ def build(
                         encoding="utf-8")
         written.append(path)
 
-    page = out_dir / "index.html"
-    page.write_text(
-        render_html(counts, histogram, companies, eligible, series, generated_at),
-        encoding="utf-8",
-    )
-    written.append(page)
+    # Both languages from the same numbers, in one pass, so they cannot drift.
+    for lang in LANGUAGES:
+        page = out_dir / lang.filename
+        page.write_text(
+            render_html(counts, histogram, companies, eligible, series,
+                        generated_at, lang=lang),
+            encoding="utf-8",
+        )
+        written.append(page)
     return written
