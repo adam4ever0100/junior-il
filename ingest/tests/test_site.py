@@ -52,11 +52,34 @@ def test_empty_buckets_are_still_drawn():
     assert len(data["values"]) == 6
 
 
+def flat(html):
+    """Collapse whitespace: the template wraps prose across source lines."""
+    return " ".join(html.split())
+
+
 def test_the_headline_is_the_invited_count_not_the_eligible_count():
     html = render()
     assert '<div class="hero-n">0</div>' in html
-    # Collapse whitespace: the template wraps prose across source lines.
-    assert "not because they invite someone starting out" in " ".join(html.split())
+    assert "not because they invite someone starting out" in flat(html)
+
+
+def test_the_hero_claim_follows_the_numbers_rather_than_being_written():
+    # It asserts *why* roles are open, so it cannot be fixed prose. With one
+    # role inviting a graduate, "only because they state no requirement" is a
+    # false statement about the data.
+    html = flat(render(counts=counts(explicit_entry=1, junior_eligible=4)))
+    assert "1 that invites a graduate outright, and 3 that simply state no" in html
+    assert "only because" not in html
+
+
+def test_hero_claim_when_every_eligible_role_is_explicit():
+    html = flat(render(counts=counts(explicit_entry=3, junior_eligible=3)))
+    assert "each one says so explicitly" in html
+
+
+def test_hero_claim_when_nothing_is_open_at_all():
+    html = flat(render(counts=counts(explicit_entry=0, junior_eligible=0)))
+    assert "cannot be applied to" in html or "can be applied to by a graduate at all" in html
 
 
 def test_company_names_are_escaped():

@@ -101,6 +101,29 @@ def render_html(
     il_eng = counts["open_israel_eng"]
     invited = counts["explicit_entry"]
     eligible_n = counts["junior_eligible"]
+    silent = eligible_n - invited
+
+    # The sub-heading is generated, not written, because it makes a claim about
+    # *why* those roles are open. An earlier version hardcoded "only because
+    # they state no requirement at all" — true when nothing invited a graduate,
+    # and false the moment one did. Prose that asserts a number has to be
+    # derived from that number.
+    if eligible_n == 0:
+        hero_sub = ("No open engineering role in the sample can be applied to "
+                    "by a graduate at all.")
+    elif invited == 0:
+        hero_sub = (f"{eligible_n} can be applied to in total — but only because "
+                    "they state no experience requirement at all, not because "
+                    "they invite someone starting out. The door is not ajar; it "
+                    "is unlabelled.")
+    elif silent == 0:
+        hero_sub = (f"{eligible_n} can be applied to in total, and each one says "
+                    "so explicitly.")
+    else:
+        hero_sub = (f"{eligible_n} can be applied to in total: {invited} that "
+                    f"invites a graduate outright, and {silent} that simply "
+                    "state no requirement at all. Most of the open door is an "
+                    "omission rather than an invitation.")
 
     return f"""<!doctype html>
 <html lang="en">
@@ -178,9 +201,7 @@ boards, not from opinion. Updated automatically; the method is published.</p>
   <div class="hero-n">{invited}</div>
   <p class="hero-c">of <strong>{il_eng}</strong> open engineering roles located in
   Israel state an experience requirement a graduate could meet.</p>
-  <p class="hero-sub">{eligible_n} can be applied to in total — but only because
-  they state no experience requirement at all, not because they invite someone
-  starting out. The door is not ajar; it is unlabelled.</p>
+  <p class="hero-sub">{hero_sub}</p>
 </div>
 
 <div class="stats">
