@@ -14,7 +14,6 @@ GREENHOUSE_BOARDS: list[str] = [
     "augury",
     "bringg",
     "catonetworks",
-    "cybereason",
     "fireblocks",
     "island",
     "jfrog",
@@ -31,4 +30,20 @@ GREENHOUSE_BOARDS: list[str] = [
     "yotpo",
 ]
 
-ALL_BOARDS: list[tuple[str, str]] = [("greenhouse", t) for t in GREENHOUSE_BOARDS]
+# Retired, kept as a record of the decision rather than deleted silently:
+#   "cybereason" — its Greenhouse board returned 404 from 18 Oct 2026. Its
+#   postings were closed by `retire-boards` with closed_reason='board_retired'.
+
+# Comeet needs two identifiers per board, so the slug maps to (uid, token).
+# Both are public — they are lifted from the company's own careers page, whose
+# JavaScript calls the same API — and both are verified against the live API by
+# tools/find_comeet.py before being added here.
+COMEET_BOARDS: dict[str, tuple[str, str]] = {
+    "cycode": ("A8.00D", "8AD340E3CBB3CBB22B445680340E22B44568"),
+    "gloat": ("E5.000", "5E02340002F0017800234011A01780"),
+}
+
+ALL_BOARDS: list[tuple[str, str]] = (
+    [("greenhouse", token) for token in GREENHOUSE_BOARDS]
+    + [("comeet", slug) for slug in COMEET_BOARDS]
+)

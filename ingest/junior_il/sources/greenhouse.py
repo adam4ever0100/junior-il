@@ -4,7 +4,6 @@ One request per board returns every open posting with its full description:
     https://boards-api.greenhouse.io/v1/boards/{token}/jobs?content=true
 No key, no pagination, no anti-bot. This is why it is the first source.
 """
-import time
 from datetime import datetime
 from typing import Any, Iterator, Optional
 
@@ -13,13 +12,9 @@ import httpx
 from junior_il import config
 from junior_il.htmltext import html_to_text
 from junior_il.models import Posting
+from junior_il.sources.base import fetch_json
 
 API = "https://boards-api.greenhouse.io/v1/boards/{token}/jobs"
-
-# Big boards occasionally time out on the first request and answer fine on the
-# second. Retrying beats recording a false "board down".
-RETRIES = 3
-BACKOFF_SECONDS = 2.0
 
 
 def _parse_ts(value: Optional[str]) -> Optional[datetime]:
@@ -50,22 +45,9 @@ class GreenhouseSource:
             yield self._to_posting(board_token, job)
 
     def _get_with_retry(self, board_token: str) -> dict[str, Any]:
-        last: Exception | None = None
-        for attempt in range(RETRIES):
-            try:
-                response = self._client.get(
-                    API.format(token=board_token), params={"content": "true"}
-                )
-                response.raise_for_status()
-                return response.json()
-            except (httpx.TransportError, httpx.HTTPStatusError) as exc:
-                # A 404 means the board token is wrong; retrying cannot fix it.
-                if isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code == 404:
-                    raise
-                last = exc
-                if attempt < RETRIES - 1:
-                    time.sleep(BACKOFF_SECONDS * (attempt + 1))
-        raise last  # type: ignore[misc]
+        return fetch_json(
+            self._client, API.format(token=board_token), {"content": "true"}
+        )
 
     def _to_posting(self, board_token: str, job: dict[str, Any]) -> Posting:
         departments = job.get("departments") or []

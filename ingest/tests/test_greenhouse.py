@@ -59,8 +59,8 @@ def test_retries_transient_failure_then_succeeds():
             raise httpx.ReadTimeout("boom", request=request)
         return httpx.Response(200, json=BOARD)
 
-    import junior_il.sources.greenhouse as gh
-    gh.BACKOFF_SECONDS = 0  # keep the test fast
+    import junior_il.sources.base as base
+    base.BACKOFF_SECONDS = 0  # keep the test fast
     assert len(list(_source(handler).fetch("acme"))) == 1
     assert calls["n"] == 3
 
